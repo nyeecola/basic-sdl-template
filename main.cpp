@@ -3,18 +3,14 @@
 #include <cstdlib>
 #include <cmath>
 
-#include "custom_types.hpp"
 #include "utils.hpp"
-#include "debug.hpp"
 #include "constants.hpp"
 
 #include "test.hpp"
 
-void initialize(SDL_Renderer *renderer)
+void initialize(SDL_Renderer *renderer, const u8 *keys_pressed)
 {
-    debug_initialize_text(renderer);
-
-    test_initialize();
+    test_initialize(renderer, keys_pressed);
 }
 
 void update(double dt)
@@ -25,17 +21,15 @@ void update(double dt)
 void render(SDL_Renderer *renderer, double dt)
 {
     test_render(renderer, dt);
+}
 
-    debug_draw_fps(dt);
+void handle(SDL_Event)
+{
 
-    SDL_RenderPresent(renderer);
 }
 
 int main(int, char *[])
 {
-    SDL_Window* window;
-    SDL_Renderer* renderer;
-
     // initialize video
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
@@ -43,19 +37,19 @@ int main(int, char *[])
     }
 
     // create window
-    window = SDL_CreateWindow("SDL Tutorial",
-                              SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED,
-                              DEFAULT_SCREEN_WIDTH,
-                              DEFAULT_SCREEN_HEIGHT,
-                              SDL_WINDOW_SHOWN);
+    SDL_Window* window = SDL_CreateWindow("SDL Tutorial",
+                                          SDL_WINDOWPOS_UNDEFINED,
+                                          SDL_WINDOWPOS_UNDEFINED,
+                                          DEFAULT_SCREEN_WIDTH,
+                                          DEFAULT_SCREEN_HEIGHT,
+                                          SDL_WINDOW_SHOWN);
     if (!window)
     {
         force_quit("Failed to create window.\n");
     }
 
     // create renderer
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer)
     {
         SDL_DestroyWindow(window);
@@ -63,7 +57,8 @@ int main(int, char *[])
     }
 
     // initialization
-    initialize(renderer);
+    const u8 *keys_pressed = SDL_GetKeyboardState(0);
+    initialize(renderer, keys_pressed);
 
     // main loop
     bool running = true;
@@ -76,7 +71,14 @@ int main(int, char *[])
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            if (event.type == SDL_QUIT) running = false;
+            if (event.type == SDL_QUIT)
+            {
+                running = false;
+            }
+            else
+            {
+                handle(event);
+            }
         }
 
         // calculate time elapsed since last frame
@@ -89,6 +91,7 @@ int main(int, char *[])
 
         // render frame
         render(renderer, delta_time);
+        SDL_RenderPresent(renderer);
     }
 
     SDL_DestroyRenderer(renderer);
