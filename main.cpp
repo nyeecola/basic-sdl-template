@@ -5,14 +5,17 @@
 
 #include "custom_types.h"
 #include "utils.h"
+#include "debug.h"
 
 #include "test.h"
 
 const int DEFAULT_SCREEN_WIDTH = 800;
 const int DEFAULT_SCREEN_HEIGHT = 600;
 
-void initialize()
+void initialize(SDL_Renderer *renderer)
 {
+    debug_initialize_text(renderer);
+
     test_initialize();
 }
 
@@ -24,12 +27,16 @@ void update(double dt)
 void render(SDL_Renderer *renderer, double dt)
 {
     test_render(renderer, dt);
+
+    debug_draw_fps(dt);
+
+    SDL_RenderPresent(renderer);
 }
 
 int main(int, char *[])
 {
-    SDL_Window* window = NULL;
-    SDL_Renderer* renderer = NULL;
+    SDL_Window* window;
+    SDL_Renderer* renderer;
 
     // initialize video
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
@@ -50,7 +57,7 @@ int main(int, char *[])
     }
 
     // create renderer
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
     if (!renderer)
     {
         SDL_DestroyWindow(window);
@@ -58,7 +65,7 @@ int main(int, char *[])
     }
 
     // initialization
-    initialize();
+    initialize(renderer);
 
     // main loop
     bool running = true;
@@ -77,7 +84,7 @@ int main(int, char *[])
         // calculate time elapsed since last frame
         last_counter = current_counter;
         current_counter = SDL_GetPerformanceCounter();
-        delta_time = (double) (abs(current_counter - last_counter) * 1000 / SDL_GetPerformanceFrequency());
+        delta_time = (double) ((abs(current_counter - last_counter) * 1000) / SDL_GetPerformanceFrequency());
 
         // update world for this frame
         update(delta_time);
@@ -86,7 +93,6 @@ int main(int, char *[])
         render(renderer, delta_time);
     }
 
-    // probably not really needed for windows and linux
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
     SDL_Quit();

@@ -3,6 +3,7 @@
 
 #include <SDL2/SDL.h>
 #include <cmath>
+
 #include "custom_types.h"
 
 typedef struct
@@ -29,24 +30,24 @@ void test_update(double dt)
     if (red_decreasing)
     {
         background_color.red -= 0.1 * dt;
-        if (background_color.red < 0) red_decreasing = false;
+        if (background_color.red < 5) red_decreasing = false;
     }
     else
     {
         background_color.red += 0.1 * dt;
-        if (background_color.red > 255) red_decreasing = true;
+        if (background_color.red > 250) red_decreasing = true;
     }
 
     static bool blue_decreasing = false;
     if (blue_decreasing)
     {
         background_color.blue -= 0.1 * dt;
-        if (background_color.blue < 0) blue_decreasing = false;
+        if (background_color.blue < 5) blue_decreasing = false;
     }
     else
     {
         background_color.blue += 0.1 * dt;
-        if (background_color.blue > 255) blue_decreasing = true;
+        if (background_color.blue > 250) blue_decreasing = true;
     }
 }
 
@@ -58,7 +59,6 @@ void test_render(SDL_Renderer *renderer, double)
                            (u8) round(background_color.blue),
                            (u8) round(background_color.alpha));
     SDL_RenderClear(renderer);
-    SDL_RenderPresent(renderer);
 }
 
 #endif
