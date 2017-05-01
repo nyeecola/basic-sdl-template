@@ -6,7 +6,7 @@
 #include <cstdio>
 #include <cstring>
 
-#include "utils.h"
+#include "utils.hpp"
 
 const int FONT_SIZE = 32;
 

@@ -3,11 +3,11 @@
 #include <cstdlib>
 #include <cmath>
 
-#include "custom_types.h"
-#include "utils.h"
-#include "debug.h"
+#include "custom_types.hpp"
+#include "utils.hpp"
+#include "debug.hpp"
 
-#include "test.h"
+#include "test.hpp"
 
 const int DEFAULT_SCREEN_WIDTH = 800;
 const int DEFAULT_SCREEN_HEIGHT = 600;

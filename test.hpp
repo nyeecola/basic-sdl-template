@@ -4,7 +4,7 @@
 #include <SDL2/SDL.h>
 #include <cmath>
 
-#include "custom_types.h"
+#include "custom_types.hpp"
 
 typedef struct
 {
