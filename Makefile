@@ -5,7 +5,7 @@ lint:
 
 compile:
 	mkdir -p build
-	g++ main.cpp -O0 -o build/main.exe -lSDL2 -lSDL2_ttf -lm -Wall -Wextra -pedantic -std=c++11
+	g++ main.cpp -O2 -o build/main.exe -lSDL2 -lSDL2_ttf -lm -Wall -Wextra -pedantic -std=c++11
 
 clean:
 	rm -rf build

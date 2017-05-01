@@ -6,11 +6,9 @@
 #include "custom_types.hpp"
 #include "utils.hpp"
 #include "debug.hpp"
+#include "constants.hpp"
 
 #include "test.hpp"
-
-const int DEFAULT_SCREEN_WIDTH = 800;
-const int DEFAULT_SCREEN_HEIGHT = 600;
 
 void initialize(SDL_Renderer *renderer)
 {
@@ -57,7 +55,7 @@ int main(int, char *[])
     }
 
     // create renderer
-    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     if (!renderer)
     {
         SDL_DestroyWindow(window);
@@ -72,10 +70,10 @@ int main(int, char *[])
     u64 current_counter = SDL_GetPerformanceCounter();
     u64 last_counter = 0;
     double delta_time = 0;
-    SDL_Event event;
     while (running)
     {
         // handle events
+        SDL_Event event;
         while (SDL_PollEvent(&event))
         {
             if (event.type == SDL_QUIT) running = false;
