@@ -5,5 +5,4 @@
 
 ## Not yet done
 
-- Handle mouse input
 - Windows build script
