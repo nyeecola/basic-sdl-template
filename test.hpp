@@ -9,8 +9,6 @@
 #include "debug.hpp"
 #include "constants.hpp"
 
-static const u8 *global_keys_pressed = 0;
-
 typedef struct
 {
     float red;
@@ -18,8 +16,6 @@ typedef struct
     float blue;
     float alpha;
 } color_t;
-
-static color_t background_color;
 
 typedef struct
 {
@@ -33,6 +29,8 @@ typedef struct
 
 static ball_t global_keybd_ball;
 static ball_t global_mouse_ball;
+static const u8 *global_keys_pressed = 0;
+static color_t background_color;
 
 void test_initialize(SDL_Renderer *renderer, const u8 *keys_pressed)
 {
@@ -52,7 +50,7 @@ void test_initialize(SDL_Renderer *renderer, const u8 *keys_pressed)
 
     global_keys_pressed = keys_pressed;
 
-    background_color.red = 127;
+    background_color.red = 0;
     background_color.green = 0;
     background_color.blue = 127;
     background_color.alpha = 255;
