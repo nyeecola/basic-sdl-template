@@ -30,4 +30,4 @@ build
 *.app
 
 # Other
-ctags
+tags

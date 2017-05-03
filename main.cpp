@@ -1,31 +1,36 @@
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
+
 #include <cstdio>
+#include <cstdint>
 #include <cstdlib>
+#include <cstring>
 #include <cmath>
 
-#include "utils.hpp"
 #include "constants.hpp"
+#include "main.hpp"
 
-#include "test.hpp"
+#include "debug.cpp"
+#include "game.cpp"
 
-void initialize(SDL_Renderer *renderer, const u8 *keys_pressed)
+void force_quit(const char *str)
 {
-    test_initialize(renderer, keys_pressed);
+    puts(str);
+    printf("Error: %s\n", SDL_GetError());
+    SDL_Quit();
+    exit(1);
 }
 
-void update(double dt)
+input_t *initialize_input()
 {
-    test_update(dt);
-}
+    input_t *input = (input_t *) malloc(sizeof(*input));
 
-void render(SDL_Renderer *renderer, double dt)
-{
-    test_render(renderer, dt);
-}
+    input->keys_pressed = SDL_GetKeyboardState(0);
+    input->mouse.x = 0;
+    input->mouse.y = 0;
 
-void handle(SDL_Event)
-{
-
+    return input;
 }
 
 int main(int, char *[])
@@ -57,8 +62,9 @@ int main(int, char *[])
     }
 
     // initialization
-    const u8 *keys_pressed = SDL_GetKeyboardState(0);
-    initialize(renderer, keys_pressed);
+    input_t *input = initialize_input();
+    game_state_t *game_state = game_state_initialize(renderer);
+    debug_initialize_text(renderer);
 
     // main loop
     bool running = true;
@@ -71,13 +77,15 @@ int main(int, char *[])
         SDL_Event event;
         while (SDL_PollEvent(&event))
         {
-            if (event.type == SDL_QUIT)
+            switch (event.type)
             {
-                running = false;
-            }
-            else
-            {
-                handle(event);
+                case SDL_QUIT:
+                    running = false;
+                    break;
+                case SDL_MOUSEMOTION:
+                    input->mouse.x = event.motion.x;
+                    input->mouse.y = event.motion.y;
+                    break;
             }
         }
 
@@ -87,10 +95,11 @@ int main(int, char *[])
         delta_time = (double) ((abs(current_counter - last_counter) * 1000) / SDL_GetPerformanceFrequency());
 
         // update world for this frame
-        update(delta_time);
+        game_state_update(game_state, input, delta_time);
 
         // render frame
-        render(renderer, delta_time);
+        game_state_render(game_state, renderer, delta_time);
+        debug_draw_fps(delta_time);
         SDL_RenderPresent(renderer);
     }
 
