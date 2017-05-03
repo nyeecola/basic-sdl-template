@@ -1,3 +1,8 @@
+enum entity_type_t
+{
+    ENTITY_BALL,
+};
+
 typedef struct
 {
     float red;
@@ -10,16 +15,20 @@ typedef struct
 {
     double x;
     double y;
-    double speed;
+    double speed; // TODO: change for velocity
+
     SDL_Texture *image;
     int w;
     int h;
-} ball_t;
+
+    entity_type_t type;
+} entity_t;
 
 typedef struct
 {
     color_t background_color;
 
-    ball_t mouse_ball;   
-    ball_t keybd_ball;   
+    entity_t mouse_ball;   
+    entity_t keybd_ball;   
+    entity_t enemy_ball;
 } game_state_t;

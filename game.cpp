@@ -22,11 +22,19 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer)
     SDL_QueryTexture(game_state->mouse_ball.image, 0, 0, &game_state->mouse_ball.w, &game_state->mouse_ball.h);
     game_state->mouse_ball.speed = BALL_SPEED; // FIXME: verify if needed
 
+    // enemy ball
+    game_state->enemy_ball.image = IMG_LoadTexture(renderer, BALL_IMG_PATH);
+    SDL_QueryTexture(game_state->enemy_ball.image, 0, 0, &game_state->enemy_ball.w, &game_state->enemy_ball.h);
+    game_state->enemy_ball.x = 400;
+    game_state->enemy_ball.y = 60;
+    game_state->enemy_ball.speed = BALL_SPEED;
+
     return game_state;
 }
 
 void game_state_update(game_state_t *game_state, input_t *input, double dt)
 {
+    // keyboard ball movement
     if (input->keys_pressed[SDL_SCANCODE_UP])
     {
         game_state->keybd_ball.y -= game_state->keybd_ball.speed * dt;
@@ -44,10 +52,17 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt)
         game_state->keybd_ball.x += game_state->keybd_ball.speed * dt;
     }
 
+    // mouse ball movement
     int mouse_x, mouse_y;
     SDL_GetMouseState(&mouse_x, &mouse_y);
     game_state->mouse_ball.x = mouse_x;
     game_state->mouse_ball.y = mouse_y;
+
+    // enemy ball movement
+    int boundary_left = 200;
+    int boundary_right = 600;
+    
+    
 
     double multiplier = 0.1;
     static bool red_decreasing = false;
@@ -102,5 +117,12 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double)
         ball_rect.w = round(BALL_SCALE * game_state->mouse_ball.w);
         ball_rect.h = round(BALL_SCALE * game_state->mouse_ball.h);
         SDL_RenderCopy(renderer, game_state->mouse_ball.image, 0, &ball_rect);
+
+        // enemy ball
+        ball_rect.x = round(game_state->enemy_ball.x - (BALL_SCALE * game_state->enemy_ball.w) / 2);
+        ball_rect.y = round(game_state->enemy_ball.y - (BALL_SCALE * game_state->enemy_ball.h) / 2);
+        ball_rect.w = round(BALL_SCALE * game_state->enemy_ball.w);
+        ball_rect.h = round(BALL_SCALE * game_state->enemy_ball.h);
+        SDL_RenderCopy(renderer, game_state->enemy_ball.image, 0, &ball_rect);
     }
 }
