@@ -7,10 +7,12 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <cassert>
 
 #include "constants.hpp"
 #include "main.hpp"
 
+#include "math.cpp"
 #include "debug.cpp"
 #include "game.cpp"
 
@@ -62,6 +64,7 @@ int main(int, char *[])
     }
 
     // initialization
+    // set seed for RNG
     input_t *input = initialize_input();
     game_state_t *game_state = game_state_initialize(renderer);
     debug_initialize_text(renderer);
