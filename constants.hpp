@@ -9,4 +9,5 @@ const char * const FONT_PATH = "assets/Inconsolata-Bold.ttf";
 // TEST ASSETS
 const char * const BALL_IMG_PATH = "assets/ball.png";
 const double BALL_SPEED = 0.8;
-const double BALL_SCALE = 0.1;
+const double BALL_SCALE = 0.12;
+const double PARTICLE_SIZE = 0.04;
