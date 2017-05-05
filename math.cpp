@@ -52,6 +52,17 @@ inline v3 math_normalize(v3 vector)
     return vector;
 }
 
+inline v2 rotate_vector(v2 v, double angle)
+{
+    double new_x = v.x * cos(angle) - v.y * sin(angle);
+    double new_y = v.x * sin(angle) + v.y * cos(angle);
+
+    v.x = new_x;
+    v.y = new_y;
+
+    return v;
+}
+
 inline v2 operator-(v2 a, v2 b)
 {
     return V2(a.x - b.x, a.y - b.y);

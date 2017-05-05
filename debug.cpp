@@ -35,9 +35,9 @@ void create_texture_for_glyphs(int index)
 }
 
 // Creates glyphs
-void debug_initialize_text(SDL_Renderer *renderer)
+void debug_initialize_text(renderer_t *renderer)
 {
-    global_debug_renderer = renderer;
+    global_debug_renderer = renderer->sdl;
 
     if (TTF_Init() == -1) {
         puts("Failed to initialize TTF.");

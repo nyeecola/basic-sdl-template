@@ -8,7 +8,17 @@ typedef int64_t s64;
 typedef uint64_t u64;
 
 // ---------------------
-// input data
+// renderer
+// ---------------------
+typedef struct
+{
+    SDL_Renderer *sdl;
+    // TODO: unordered map
+    std::map<std::string, SDL_Texture *> images;
+} renderer_t;
+
+// ---------------------
+// input
 // ---------------------
 typedef struct
 {

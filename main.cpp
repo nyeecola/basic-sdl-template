@@ -2,6 +2,10 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
+#include <string>
+#include <list>
+#include <map>
+
 #include <cstdio>
 #include <cstdint>
 #include <cstdlib>
@@ -57,21 +61,23 @@ int main(int, char *[])
 
     // create renderer
 #if 1
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+    SDL_Renderer* sdl_renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 #else
-    SDL_Renderer* renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+    SDL_Renderer* sdl_renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
 #endif
-    if (!renderer)
+    if (!sdl_renderer)
     {
         SDL_DestroyWindow(window);
         force_quit("Failed to create renderer.\n");
     }
+    renderer_t renderer = {};
+    renderer.sdl = sdl_renderer;
 
     // initialization
     // set seed for RNG
     input_t *input = initialize_input();
-    game_state_t *game_state = game_state_initialize(renderer);
-    debug_initialize_text(renderer);
+    game_state_t *game_state = game_state_initialize(&renderer);
+    debug_initialize_text(&renderer);
 
     // main loop
     bool running = true;
@@ -102,15 +108,15 @@ int main(int, char *[])
         delta_time = (double) ((abs(current_counter - last_counter) * 1000) / SDL_GetPerformanceFrequency());
 
         // update world for this frame
-        game_state_update(game_state, input, renderer, delta_time);
+        game_state_update(game_state, input, &renderer, delta_time);
 
         // render frame
-        game_state_render(game_state, renderer, delta_time);
+        game_state_render(game_state, &renderer, delta_time);
         debug_draw_fps(delta_time);
-        SDL_RenderPresent(renderer);
+        SDL_RenderPresent(renderer.sdl);
     }
 
-    SDL_DestroyRenderer(renderer);
+    SDL_DestroyRenderer(renderer.sdl);
     SDL_DestroyWindow(window);
     SDL_Quit();
 
