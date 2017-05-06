@@ -27,11 +27,9 @@ void update_particle_position(particle_t *particle, double dt)
     particle->pos += particle->velocity * dt;
 }
 
-void ai_do_actions(game_state_t *game, renderer_t *renderer, double dt)
+void ai_do_actions(game_state_t *game, double dt)
 {
     assert(game);
-    assert(renderer);
-    assert(renderer->sdl);
     assert(dt > 0);
 
     // TODO: different behaviors
@@ -68,25 +66,23 @@ void ai_do_actions(game_state_t *game, renderer_t *renderer, double dt)
     }
 
     // if not on cooldown, create particles
-    if (enemy->enemy_data.time_since_last_action > enemy->enemy_data.cooldown) 
+    if (enemy->enemy_data.time_since_last_action > enemy->enemy_data.spawn_rate) 
     {
         enemy->enemy_data.time_since_last_action = 0;
 
         double x, y;
-        int num_particles_to_gen = 16;
+        int num_particles_to_gen = 12;
         for (int i = 0; i < num_particles_to_gen; i++)
         {
             double radians = (((2 * PI) / num_particles_to_gen) * i) + (enemy->enemy_data.last_angle += enemy->enemy_data.angle_step);
             x = cos(radians);
             y = sin(radians);
 
-            double speed = 0.1;
-
             // TODO: think if I should make a function for this
             //v2 accel = V2(-y, x) * 0.0001; // not being used in this test
 
-            game->particles->push_back(spawn_particle_towards(enemy->pos, V2(x, y), speed, V2(0, 0), BALL_IMG_PATH));
-            //game->particles->push_back(spawn_particle_towards(V2(400, 300), V2(x, y), speed, V2(0, 0), BALL_IMG_PATH));
+            //game->particles->push_back(spawn_particle_towards(enemy->pos, V2(x, y), enemy->enemy_data.particle_speed, V2(0, 0), BALL_IMG_PATH));
+            game->particles->push_back(spawn_particle_towards(V2(400, 200), V2(x, y), enemy->enemy_data.particle_speed, V2(0, 0), BALL_IMG_PATH));
         }
     }
     else
@@ -95,14 +91,10 @@ void ai_do_actions(game_state_t *game, renderer_t *renderer, double dt)
     }
 }
 
-game_state_t *game_state_initialize(renderer_t *renderer)
+game_state_t *game_state_initialize()
 {
-    assert(renderer);
-    assert(renderer->sdl);
-
     game_state_t *game = (game_state_t *) calloc(1, sizeof(*game));
     game->particles = new std::list<particle_t>();
-    game->particles->clear(); // FIXME: not sure if needed
 
     // background_color
     game->background_color.red = 0;
@@ -112,48 +104,44 @@ game_state_t *game_state_initialize(renderer_t *renderer)
 
     // keyboard controlled ball
     game->keybd_ball = {};
-    game->keybd_ball.image = IMG_LoadTexture(renderer->sdl, BALL_IMG_PATH);
-    assert(game->keybd_ball.image);
-    SDL_QueryTexture(game->keybd_ball.image, 0, 0, &game->keybd_ball.w, &game->keybd_ball.h);
-    game->keybd_ball.w *= BALL_SCALE;
-    game->keybd_ball.h *= BALL_SCALE;
-    game->keybd_ball.pos = V2(40, 40);
-    game->keybd_ball.speed = BALL_SPEED;
+    game->keybd_ball.image_path = BALL_IMG_PATH;
+    game->keybd_ball.w = 40;
+    game->keybd_ball.h = 70;
+    game->keybd_ball.pos = V2(300, 700);
+    game->keybd_ball.speed = 220;
 
     // keyboard controlled ball
     game->mouse_ball = {};
-    game->mouse_ball.image = IMG_LoadTexture(renderer->sdl, BALL_IMG_PATH);
-    assert(game->mouse_ball.image);
-    SDL_QueryTexture(game->mouse_ball.image, 0, 0, &game->mouse_ball.w, &game->mouse_ball.h);
-    game->mouse_ball.w *= BALL_SCALE;
-    game->mouse_ball.h *= BALL_SCALE;
-    game->mouse_ball.speed = BALL_SPEED; // FIXME: verify if needed
+    game->mouse_ball.image_path = BALL_IMG_PATH;
+    game->mouse_ball.w = 100;
+    game->mouse_ball.h = 100;
 
     // enemy
     game->enemy = {};
     game->enemy.type = ENTITY_ENEMY;
-    game->enemy.image = IMG_LoadTexture(renderer->sdl, BALL_IMG_PATH);
-    SDL_QueryTexture(game->enemy.image, 0, 0, &game->enemy.w, &game->enemy.h);
-    game->enemy.w *= BALL_SCALE;
-    game->enemy.h *= BALL_SCALE;
+    game->enemy.image_path = BALL_IMG_PATH;
+    game->enemy.w = 100;
+    game->enemy.h = 100;
     game->enemy.pos = V2(400, 60);
-    game->enemy.speed = 0.4;
-    game->enemy.enemy_data.cooldown = 200;
+    game->enemy.speed = 60;
+    game->enemy.enemy_data.cooldown = 3.0;
+    game->enemy.enemy_data.spawn_rate = 0.08;
     game->enemy.enemy_data.stopped = true;
-    game->enemy.enemy_data.angle_step = 0.004f;
-    game->enemy.enemy_data.last_angle = 0.0f;
-    game->enemy.enemy_data.path[0] = V2(150, 250);
-    game->enemy.enemy_data.path[1] = V2(600, 400);
-    game->enemy.enemy_data.path[2] = V2(380, 530);
+    game->enemy.enemy_data.angle_step = 0.01;
+    game->enemy.enemy_data.last_angle = 0.0;
+    game->enemy.enemy_data.particle_speed = 160;
+    game->enemy.enemy_data.path[0] = V2(150, 150);
+    game->enemy.enemy_data.path[1] = V2(500, 100);
+    game->enemy.enemy_data.path[2] = V2(280, 200);
     game->enemy.enemy_data.path[3] = V2(30, 80);
     game->enemy.enemy_data.path[4] = V2(300, 120);
-    game->enemy.enemy_data.path[5] = V2(700, 130);
+    game->enemy.enemy_data.path[5] = V2(530, 180);
     game->enemy.enemy_data.path_size = 6;
 
     return game;
 }
 
-void game_state_update(game_state_t *game, input_t *input, renderer_t *renderer, double dt)
+void game_state_update(game_state_t *game, input_t *input, double dt)
 {
     assert(game);
     assert(input);
@@ -184,7 +172,7 @@ void game_state_update(game_state_t *game, input_t *input, renderer_t *renderer,
     game->mouse_ball.pos.y = mouse_y;
 
     // perform enemy's actions
-    ai_do_actions(game, renderer, dt);
+    ai_do_actions(game, dt);
 
     // update particles
     std::list<particle_t>::iterator it, end;
@@ -195,10 +183,10 @@ void game_state_update(game_state_t *game, input_t *input, renderer_t *renderer,
         update_particle_position(particle, dt);
 
         // TODO: use current instead of default (we don't have current yet :()
-        if (particle->pos.x < -DEFAULT_SCREEN_WIDTH / 2 ||
-            particle->pos.x > DEFAULT_SCREEN_WIDTH + DEFAULT_SCREEN_WIDTH / 2 ||
-            particle->pos.y < -DEFAULT_SCREEN_HEIGHT ||
-            particle->pos.y > DEFAULT_SCREEN_HEIGHT + DEFAULT_SCREEN_HEIGHT / 2)
+        if (particle->pos.x < -DEFAULT_SCREEN_WIDTH / 3 ||
+            particle->pos.x > DEFAULT_SCREEN_WIDTH + DEFAULT_SCREEN_WIDTH / 3 ||
+            particle->pos.y < -DEFAULT_SCREEN_HEIGHT / 3 ||
+            particle->pos.y > DEFAULT_SCREEN_HEIGHT + DEFAULT_SCREEN_HEIGHT / 3)
         {
             it = game->particles->erase(it);
             continue;
@@ -209,7 +197,7 @@ void game_state_update(game_state_t *game, input_t *input, renderer_t *renderer,
 
     // update background
     {
-        double multiplier = 0.1;
+        double multiplier = 100;
         static bool red_decreasing = false;
         if (red_decreasing)
         {
@@ -235,7 +223,7 @@ void game_state_update(game_state_t *game, input_t *input, renderer_t *renderer,
     }
 }
 
-void game_state_render(game_state_t *game, renderer_t *renderer, double)
+void game_state_render(game_state_t *game, renderer_t *renderer)
 {
     assert(game);
     assert(renderer);
@@ -249,30 +237,30 @@ void game_state_render(game_state_t *game, renderer_t *renderer, double)
                            (u8) round(game->background_color.alpha));
     SDL_RenderClear(renderer->sdl);
 
-    // draw balls
+    // render balls
     {
         SDL_Rect rect;
 
         // keyboard ball
-        rect.x = round(game->keybd_ball.pos.x - (game->keybd_ball.w) / 2);
-        rect.y = round(game->keybd_ball.pos.y - (game->keybd_ball.h) / 2);
-        rect.w = round(game->keybd_ball.w);
-        rect.h = round(game->keybd_ball.h);
-        SDL_RenderCopy(renderer->sdl, game->keybd_ball.image, 0, &rect);
+        rect.x = (int) round(game->keybd_ball.pos.x - (game->keybd_ball.w) / 2);
+        rect.y = (int) round(game->keybd_ball.pos.y - (game->keybd_ball.h) / 2);
+        rect.w = (int) round(game->keybd_ball.w);
+        rect.h = (int) round(game->keybd_ball.h);
+        display_image(renderer, game->keybd_ball.image_path, &rect);
 
         // mouse ball
-        rect.x = round(game->mouse_ball.pos.x - (game->mouse_ball.w) / 2);
-        rect.y = round(game->mouse_ball.pos.y - (game->mouse_ball.h) / 2);
-        rect.w = round(game->mouse_ball.w);
-        rect.h = round(game->mouse_ball.h);
-        SDL_RenderCopy(renderer->sdl, game->mouse_ball.image, 0, &rect);
+        rect.x = (int) round(game->mouse_ball.pos.x - (game->mouse_ball.w) / 2);
+        rect.y = (int) round(game->mouse_ball.pos.y - (game->mouse_ball.h) / 2);
+        rect.w = (int) round(game->mouse_ball.w);
+        rect.h = (int) round(game->mouse_ball.h);
+        display_image(renderer, game->mouse_ball.image_path, &rect);
 
         // enemy ball
-        rect.x = round(game->enemy.pos.x - (game->enemy.w) / 2);
-        rect.y = round(game->enemy.pos.y - (game->enemy.h) / 2);
-        rect.w = round(game->enemy.w);
-        rect.h = round(game->enemy.h);
-        SDL_RenderCopy(renderer->sdl, game->enemy.image, 0, &rect);
+        rect.x = (int) round(game->enemy.pos.x - (game->enemy.w) / 2);
+        rect.y = (int) round(game->enemy.pos.y - (game->enemy.h) / 2);
+        rect.w = (int) round(game->enemy.w);
+        rect.h = (int) round(game->enemy.h);
+        display_image(renderer, game->enemy.image_path, &rect);
     }
 
     // render particles
@@ -283,19 +271,12 @@ void game_state_render(game_state_t *game, renderer_t *renderer, double)
         {
             particle_t *particle = &(*it);
 
-            // render image if it wasn't rendered before
-            std::string path(particle->image_path);
-            if (!renderer->images.count(path))
-            {
-                SDL_Texture *tex = IMG_LoadTexture(renderer->sdl, BALL_IMG_PATH);
-                renderer->images[path] = tex;
-            }
+            rect.x = (int) round(particle->pos.x - (particle->w) / 2);
+            rect.y = (int) round(particle->pos.y - (particle->h) / 2);
+            rect.w = (int) round(particle->w);
+            rect.h = (int) round(particle->h);
 
-            rect.x = round(particle->pos.x - (particle->w) / 2);
-            rect.y = round(particle->pos.y - (particle->h) / 2);
-            rect.w = round(particle->w);
-            rect.h = round(particle->h);
-            SDL_RenderCopy(renderer->sdl, renderer->images[path], 0, &rect);
+            display_image(renderer, particle->image_path, &rect);
         }
     }
 }

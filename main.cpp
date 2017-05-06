@@ -16,28 +16,10 @@
 #include "constants.hpp"
 #include "main.hpp"
 
+#include "utils.cpp"
 #include "math.cpp"
 #include "debug.cpp"
 #include "game.cpp"
-
-void force_quit(const char *str)
-{
-    puts(str);
-    printf("Error: %s\n", SDL_GetError());
-    SDL_Quit();
-    exit(1);
-}
-
-input_t *initialize_input()
-{
-    input_t *input = (input_t *) malloc(sizeof(*input));
-
-    input->keys_pressed = SDL_GetKeyboardState(0);
-    input->mouse.x = 0;
-    input->mouse.y = 0;
-
-    return input;
-}
 
 int main(int, char *[])
 {
@@ -76,7 +58,7 @@ int main(int, char *[])
     // initialization
     // set seed for RNG
     input_t *input = initialize_input();
-    game_state_t *game_state = game_state_initialize(&renderer);
+    game_state_t *game_state = game_state_initialize();
     debug_initialize_text(&renderer);
 
     // main loop
@@ -105,13 +87,14 @@ int main(int, char *[])
         // calculate time elapsed since last frame
         last_counter = current_counter;
         current_counter = SDL_GetPerformanceCounter();
-        delta_time = (double) ((abs(current_counter - last_counter) * 1000) / SDL_GetPerformanceFrequency());
+        delta_time = (double) ((abs(current_counter - last_counter)) /
+                                (double) SDL_GetPerformanceFrequency());
 
         // update world for this frame
-        game_state_update(game_state, input, &renderer, delta_time);
+        game_state_update(game_state, input, delta_time);
 
         // render frame
-        game_state_render(game_state, &renderer, delta_time);
+        game_state_render(game_state, &renderer);
         debug_draw_fps(delta_time);
         SDL_RenderPresent(renderer.sdl);
     }

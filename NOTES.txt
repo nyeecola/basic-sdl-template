@@ -1,14 +1,15 @@
-### WHY ###
-
-1- No
-
 ### TODO ###
 
-- Create a linked list
-- Use linked list for particles
-
-- Create a hash set
-
-- Stop rendering the same image more than once
-
 - Find a way to minimize "forgot to set something" problems
+- Add support for multiple attacks
+- Make sure hero cannot move outside the screen
+- Add damage and health
+- Add hero's attacks
+- Add hero's slowmo
+- Create score system
+- Create start menu
+- Create pause menu
+
+// optimizations
+- Create a linked list
+- Create a hash set

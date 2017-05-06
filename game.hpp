@@ -6,10 +6,10 @@ enum entity_type_t
 
 typedef struct
 {
-    float red;
-    float green;
-    float blue;
-    float alpha;
+    double red;
+    double green;
+    double blue;
+    double alpha;
 } color_t;
 
 typedef struct
@@ -19,14 +19,15 @@ typedef struct
     v2 path[10];
     int path_size;
 
+    double cooldown;
 
     // TODO: separe this into an atk_pattern_t struct
-    int cooldown;                  // in milliseconds
+    double spawn_rate;             // in milliseconds
     double time_since_last_action; // in milliseconds
-    // TODO: maybe remove this?
     double angle_step;
     // TODO: remember to reset this once the attack is finished
     double last_angle;
+    double particle_speed;
 } enemy_only_t;
 
 typedef struct
@@ -37,7 +38,7 @@ typedef struct
 
     // TODO: make this be only a path so that we don't need the renderer to update the game
     // TODO: make sure the renderer does not render the same image multiple times (hash_table)
-    SDL_Texture *image;
+    const char *image_path;
     int w;
     int h;
 

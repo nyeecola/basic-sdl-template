@@ -99,7 +99,7 @@ void debug_initialize_text(renderer_t *renderer)
 // FONT_SIZE is multiplied by the scale.
 void debug_draw_text(const char *str, int x, int y, float scale)
 {
-    int len = strlen(str);
+    int len = (int) strlen(str);
     for (int i = 0; i < len; i++)
     {
         SDL_Texture *glyph = global_glyphs[(int) str[i]];
@@ -111,8 +111,8 @@ void debug_draw_text(const char *str, int x, int y, float scale)
             return;
         }
 
-        rect.w *= scale;
-        rect.h *= scale;
+        rect.w = (int) round((float) rect.w * scale);
+        rect.h = (int) round((float) rect.h * scale);
         rect.x = x + rect.w * i;
         rect.y = y;
 
@@ -134,9 +134,9 @@ void debug_draw_fps(double dt)
     static char fps_text[15] = "";
     timer += dt;
     counter++;
-    if (timer > 80) 
+    if (timer > 0.08) 
     {
-        snprintf(&fps_text[0], 15, "FPS: %.00f", 1 / (timer / (1000 * counter)));
+        snprintf(&fps_text[0], 15, "FPS: %.00f", 1 / (timer / counter));
         timer = 0;
         counter = 0;
     }
