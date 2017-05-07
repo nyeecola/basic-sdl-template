@@ -32,6 +32,7 @@ typedef struct
     double angle_step;
     double last_angle; // TODO: remember to reset this once the attack is finished
     double particle_speed;
+    v2 particle_accel;
     const char *particle_image;
     int particle_width;
     int particle_height;
@@ -47,10 +48,9 @@ typedef struct
     v2 path[10];
     int path_size;
 
-    //double cooldown; // this might not be needed (or helpful at all)
     double time_since_fight_started;
 
-    // TODO: maybe change this a pointer?
+    // TODO: change this to a linked list
     // NOTE: attacks do not necessarily happen in order, they can even happen simultaneously
     atk_pattern_t atks[10];
 } enemy_only_t;
