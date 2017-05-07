@@ -1,14 +1,14 @@
 ### TODO ###
 
 - Find a way to minimize "forgot to set something" problems
-- Add support for multiple attacks
-- Make sure hero cannot move outside the screen
+- Add support for multiple attacks (including lasers)
 - Add damage and health
 - Add hero's attacks
 - Add hero's slowmo
 - Create score system
 - Create start menu
 - Create pause menu
+- Add audio system
 
 // optimizations
 - Create a linked list

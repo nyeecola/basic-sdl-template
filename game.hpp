@@ -18,9 +18,11 @@ typedef struct
     double alpha;
 } color_t;
 
+// TODO: make sure these attacks can be used more than once (preserve initial state)
+//       (not sure if needed)
 typedef struct
 {
-    v2 *spawn_loc; // TODO: maybe add support for multiple locations? (probably not needed)
+    v2 *spawn_loc;
     double spawn_rate;             // in milliseconds
     double time_since_last_spawn;  // in milliseconds
     int particles_per_spawn;
@@ -57,10 +59,8 @@ typedef struct
 {
     v2 pos;
     double speed;
-    // TODO: consider adding velocity and acceleration here
+    // TODO: consider adding velocity and acceleration here (instead of speed)
 
-    // TODO: make this be only a path so that we don't need the renderer to update the game
-    // TODO: make sure the renderer does not render the same image multiple times (hash_table)
     const char *image_path;
     int w;
     int h;
@@ -94,7 +94,5 @@ typedef struct
     entity_t keybd_ball;
     entity_t enemy;
 
-    //particle_t particles[3000]; // TODO: create a linked list for this
-    //int num_particles;
     std::list<particle_t> *particles;
 } game_state_t;

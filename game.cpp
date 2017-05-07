@@ -146,23 +146,16 @@ void ai_do_actions(game_state_t *game, double dt)
 
             if (enemy->enemy_data.stopped)
             {
-                // TODO: find out how to make this equal time for both directions
-                /*if (enemy->enemy_data.time_since_fight_started < 18)
-                {
-                    enemy->enemy_data.atks[3].angle_step = 0.01;
-                }
-                else
-                {
-                    enemy->enemy_data.atks[3].angle_step = -0.01;
-                }*/
-
                 // TODO: verify if null vector
-                v2 player_dir = math_normalize(game->keybd_ball.pos - enemy->pos);
+                v2 player_dir = game->keybd_ball.pos - enemy->pos;
+                if (is_null_vector(player_dir))
+                {
+                    player_dir = math_normalize(player_dir);
+                }
                 double angle = atan2(player_dir.y, player_dir.x);
                 enemy->enemy_data.atks[3].arc_center = angle;
                 do_circular_atk(game->particles, &enemy->enemy_data.atks[3], dt);
             }
-
         }
 
         if (enemy->enemy_data.time_since_fight_started > 20)
@@ -304,33 +297,52 @@ void game_state_update(game_state_t *game, input_t *input, double dt)
     assert(dt > 0);
 
     // keyboard ball movement
-    double speed = game->keybd_ball.speed;
-    if (input->keys_pressed[SDL_SCANCODE_LSHIFT] || input->keys_pressed[SDL_SCANCODE_RSHIFT])
     {
-        speed *= 0.65;
+        double speed = game->keybd_ball.speed;
+        if (input->keys_pressed[SDL_SCANCODE_LSHIFT] || input->keys_pressed[SDL_SCANCODE_RSHIFT])
+        {
+            speed *= 0.65;
+        }
+        v2 offset_dir = {0, 0};
+        if (input->keys_pressed[SDL_SCANCODE_UP])
+        {
+            offset_dir.y = -1;
+        }
+        if (input->keys_pressed[SDL_SCANCODE_DOWN])
+        {
+            offset_dir.y = 1;
+        }
+        if (input->keys_pressed[SDL_SCANCODE_LEFT])
+        {
+            offset_dir.x = -1;
+        }
+        if (input->keys_pressed[SDL_SCANCODE_RIGHT])
+        {
+            offset_dir.x = 1;
+        }
+        if (!is_null_vector(offset_dir))
+        {
+            offset_dir = math_normalize(offset_dir);
+        }
+        game->keybd_ball.pos += offset_dir * speed * dt;
+
+        if (game->keybd_ball.pos.x < 0)
+        {
+            game->keybd_ball.pos.x = 0;
+        }
+        if (game->keybd_ball.pos.y < 0)
+        {
+            game->keybd_ball.pos.y = 0;
+        }
+        if (game->keybd_ball.pos.x > DEFAULT_SCREEN_WIDTH)
+        {
+            game->keybd_ball.pos.x = DEFAULT_SCREEN_WIDTH;
+        }
+        if (game->keybd_ball.pos.y > DEFAULT_SCREEN_HEIGHT)
+        {
+            game->keybd_ball.pos.y = DEFAULT_SCREEN_HEIGHT;
+        }
     }
-    v2 offset_dir = {0, 0};
-    if (input->keys_pressed[SDL_SCANCODE_UP])
-    {
-        offset_dir.y = -1;
-    }
-    if (input->keys_pressed[SDL_SCANCODE_DOWN])
-    {
-        offset_dir.y = 1;
-    }
-    if (input->keys_pressed[SDL_SCANCODE_LEFT])
-    {
-        offset_dir.x = -1;
-    }
-    if (input->keys_pressed[SDL_SCANCODE_RIGHT])
-    {
-        offset_dir.x = 1;
-    }
-    if (!is_null_vector(offset_dir))
-    {
-        offset_dir = math_normalize(offset_dir);
-    }
-    game->keybd_ball.pos += offset_dir * speed * dt;
 
     // mouse ball movement
     int mouse_x, mouse_y;
