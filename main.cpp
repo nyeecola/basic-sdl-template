@@ -16,8 +16,8 @@
 #include "constants.hpp"
 #include "main.hpp"
 
-#include "utils.cpp"
 #include "math.cpp"
+#include "utils.cpp"
 #include "debug.cpp"
 #include "game.cpp"
 
@@ -42,7 +42,7 @@ int main(int, char *[])
     }
 
     // create renderer
-#if 1
+#if 0
     SDL_Renderer* sdl_renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
 #else
     SDL_Renderer* sdl_renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);

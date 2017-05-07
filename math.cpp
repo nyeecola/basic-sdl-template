@@ -31,8 +31,30 @@ inline double math_magnitude(v3 vector)
     return sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
 }
 
+inline bool is_null_vector(v2 vector)
+{
+    if(abs(vector.x) > 0.00001 || abs(vector.y) > 0.00001)
+    {
+        return false;
+    }
+
+    return true;
+}
+
+inline bool is_null_vector(v3 vector)
+{
+    if(abs(vector.x) > 0.00001 || abs(vector.y) > 0.00001 || abs(vector.z) > 0.00001)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 inline v2 math_normalize(v2 vector)
 {
+    assert(abs(vector.x) > 0.00001 || abs(vector.y) > 0.00001);
+
     double magnitude = math_magnitude(vector);
 
     vector.x /= magnitude;
@@ -43,6 +65,8 @@ inline v2 math_normalize(v2 vector)
 
 inline v3 math_normalize(v3 vector)
 {
+    assert(abs(vector.x) > 0.00001 || abs(vector.y) > 0.00001 || abs(vector.z) > 0.00001);
+
     double magnitude = math_magnitude(vector);
 
     vector.x /= magnitude;

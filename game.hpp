@@ -1,7 +1,13 @@
-enum entity_type_t
+enum entity_type_e
 {
     ENTITY_BALL,
     ENTITY_ENEMY,
+};
+
+enum rotation_type_e
+{
+    ROTATE_CW = 0,
+    ROTATE_CCW,
 };
 
 typedef struct
@@ -14,20 +20,37 @@ typedef struct
 
 typedef struct
 {
+    v2 *spawn_loc; // TODO: maybe add support for multiple locations? (probably not needed)
+    double spawn_rate;             // in milliseconds
+    double time_since_last_spawn;  // in milliseconds
+    int particles_per_spawn;
+    double arc_center;
+    double arc_size;
+    rotation_type_e rotation_type;
+    double angle_step;
+    double last_angle; // TODO: remember to reset this once the attack is finished
+    double particle_speed;
+    const char *particle_image;
+    int particle_width;
+    int particle_height;
+    v3 particle_color;
+    // TODO: maybe add a pointer to function that can be called every in particle's update
+} atk_pattern_t;
+
+typedef struct
+{
     bool stopped;
+    bool forced_movement;
     v2 target_loc;
     v2 path[10];
     int path_size;
 
-    double cooldown;
+    //double cooldown; // this might not be needed (or helpful at all)
+    double time_since_fight_started;
 
-    // TODO: separe this into an atk_pattern_t struct
-    double spawn_rate;             // in milliseconds
-    double time_since_last_action; // in milliseconds
-    double angle_step;
-    // TODO: remember to reset this once the attack is finished
-    double last_angle;
-    double particle_speed;
+    // TODO: maybe change this a pointer?
+    // NOTE: attacks do not necessarily happen in order, they can even happen simultaneously
+    atk_pattern_t atks[10];
 } enemy_only_t;
 
 typedef struct
@@ -42,7 +65,7 @@ typedef struct
     int w;
     int h;
 
-    entity_type_t type;
+    entity_type_e type;
     union
     {
         enemy_only_t enemy_data;
@@ -60,14 +83,15 @@ typedef struct
     const char *image_path;
     int w;
     int h;
+    v3 color;
 } particle_t;
 
 typedef struct
 {
     color_t background_color;
 
-    entity_t mouse_ball;   
-    entity_t keybd_ball;   
+    entity_t mouse_ball;
+    entity_t keybd_ball;
     entity_t enemy;
 
     //particle_t particles[3000]; // TODO: create a linked list for this
