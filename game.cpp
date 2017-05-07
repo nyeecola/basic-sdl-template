@@ -204,12 +204,6 @@ game_state_t *game_state_initialize()
     game->keybd_ball.pos = V2(300, 700);
     game->keybd_ball.speed = 200;
 
-    // keyboard controlled ball
-    game->mouse_ball = {};
-    game->mouse_ball.image_path = BALL_IMG_PATH;
-    game->mouse_ball.w = 100;
-    game->mouse_ball.h = 100;
-
     // enemy
     {
         game->enemy = {};
@@ -400,12 +394,6 @@ void game_state_update(game_state_t *game, input_t *input, double dt)
         }
     }
 
-    // mouse ball movement
-    int mouse_x, mouse_y;
-    SDL_GetMouseState(&mouse_x, &mouse_y);
-    game->mouse_ball.pos.x = mouse_x;
-    game->mouse_ball.pos.y = mouse_y;
-
     // perform enemy's actions
     ai_do_actions(game, dt);
 
@@ -482,13 +470,6 @@ void game_state_render(game_state_t *game, renderer_t *renderer)
         rect.w = (int) round(game->keybd_ball.w);
         rect.h = (int) round(game->keybd_ball.h);
         display_image(renderer, game->keybd_ball.image_path, &rect, V3(255, 255, 255));
-
-        // mouse ball
-        rect.x = (int) round(game->mouse_ball.pos.x - game->mouse_ball.w / 2);
-        rect.y = (int) round(game->mouse_ball.pos.y - game->mouse_ball.h / 2);
-        rect.w = (int) round(game->mouse_ball.w);
-        rect.h = (int) round(game->mouse_ball.h);
-        display_image(renderer, game->mouse_ball.image_path, &rect, V3(255, 255, 255));
 
         // enemy ball
         rect.x = (int) round(game->enemy.pos.x - game->enemy.w / 2);

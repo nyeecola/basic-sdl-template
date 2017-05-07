@@ -65,6 +65,8 @@ typedef struct
     int w;
     int h;
 
+    double health;
+
     entity_type_e type;
     union
     {
