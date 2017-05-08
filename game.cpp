@@ -34,14 +34,14 @@ void update_particle_position(particle_t *particle, double dt)
     //v2 ortho = V2(-particle->velocity.y, particle->velocity.x) * 0.0005;
     //particle->acceleration = rotate_vector(ortho, -0.1f);
 
+	// FIXME: this may be wrong (dt squared?)
     particle->velocity += particle->acceleration * dt;
     particle->pos += particle->velocity * dt;
 }
 
-// TODO: make section of circle a parameter
+// creates a circular attack using the state passed by `atk`
 inline void do_circular_atk(std::list<particle_t> *particles, atk_pattern_t *atk, double dt)
 {
-    // spawn at the given rate
     if (atk->time_since_last_spawn > atk->spawn_rate)
     {
         atk->time_since_last_spawn = atk->time_since_last_spawn - atk->spawn_rate + dt;
@@ -74,7 +74,7 @@ inline void do_circular_atk(std::list<particle_t> *particles, atk_pattern_t *atk
     }
 }
 
-// all ai actions are here
+// does all ai actions
 void ai_do_actions(game_state_t *game, double dt)
 {
     assert(game);
@@ -164,17 +164,16 @@ void ai_do_actions(game_state_t *game, double dt)
             enemy->enemy_data.forced_movement = false;
         }
 
-        if (enemy->enemy_data.time_since_fight_started > 22 &&
-            enemy->enemy_data.time_since_fight_started < 26)
+        if (enemy->enemy_data.time_since_fight_started > 23 &&
+            enemy->enemy_data.time_since_fight_started < 27)
         {
             do_circular_atk(game->particles, &enemy->enemy_data.atks[6], dt);
         }
 
-        if (enemy->enemy_data.time_since_fight_started > 27 &&
+        if (enemy->enemy_data.time_since_fight_started > 30 &&
             enemy->enemy_data.time_since_fight_started < 34)
         {
-            enemy->enemy_data.atks[0].particles_per_spawn = 8;
-            do_circular_atk(game->particles, &enemy->enemy_data.atks[0], dt);
+            do_circular_atk(game->particles, &enemy->enemy_data.atks[7], dt);
         }
 
         if (enemy->enemy_data.time_since_fight_started > 31 &&
@@ -324,12 +323,12 @@ game_state_t *game_state_initialize()
             {
                 atk_pattern_t atk = {};
                 atk.particle_image = BALL_IMG_PATH;
-                atk.particle_width = 16;
-                atk.particle_height = 22;
+                atk.particle_width = 12;
+                atk.particle_height = 12;
                 atk.particle_color = V3(255, 0, 255);
                 atk.spawn_loc = &game->enemy.pos;
-                atk.spawn_rate = 0.054;
-                atk.particles_per_spawn = 20;
+                atk.spawn_rate = 0.06;
+                atk.particles_per_spawn = 16;
                 atk.arc_center = 0;
                 atk.arc_size = PI * 2;
                 atk.angle_step = 0.001;
@@ -338,6 +337,26 @@ game_state_t *game_state_initialize()
                 atk.particle_accel = V2(0, 0);
                 game->enemy.enemy_data.atks[6] = atk;
             }
+
+            // fast spiral from enemy
+            {
+                atk_pattern_t atk = {};
+                atk.particle_image = BALL_IMG_PATH;
+                atk.particle_width = 20;
+                atk.particle_height = 20;
+                atk.particle_color = V3(0, 0, 0);
+                atk.spawn_loc = &game->enemy.pos;
+                atk.spawn_rate = 0.34;
+                atk.particles_per_spawn = 14;
+                atk.arc_center = 0;
+                atk.arc_size = PI * 2;
+                atk.angle_step = 0.0;
+                atk.last_angle = 0.0;
+                atk.particle_speed = 200;
+                atk.particle_accel = V2(0, 0);
+                game->enemy.enemy_data.atks[7] = atk;
+            }
+
         }
     }
 
