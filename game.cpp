@@ -148,7 +148,7 @@ void ai_do_actions(game_state_t *game, double dt)
 
             if (enemy->enemy_data.stopped)
             {
-                v2 player_dir = game->keybd_ball.pos - enemy->pos;
+                v2 player_dir = game->player.pos - enemy->pos;
                 if (is_null_vector(player_dir))
                 {
                     player_dir = math_normalize(player_dir);
@@ -201,12 +201,12 @@ game_state_t *game_state_initialize()
     game->background_color.alpha = 255;
 
     // keyboard controlled ball
-    game->keybd_ball = {};
-    game->keybd_ball.image_path = BALL_IMG_PATH;
-    game->keybd_ball.w = 30;
-    game->keybd_ball.h = 42;
-    game->keybd_ball.pos = V2(300, 700);
-    game->keybd_ball.speed = 200;
+    game->player = {};
+    game->player.image_path = BALL_IMG_PATH;
+    game->player.w = 30;
+    game->player.h = 42;
+    game->player.pos = V2(300, 700);
+    game->player.speed = 200;
 
     // enemy
     {
@@ -218,6 +218,7 @@ game_state_t *game_state_initialize()
         game->enemy.pos = V2(400, 60);
         game->enemy.speed = 60;
         game->enemy.enemy_data.time_since_fight_started = 0.0;
+		game->enemy.health = 300;
 
         // movement
         {
@@ -371,10 +372,10 @@ void game_state_update(game_state_t *game, input_t *input, double dt)
 
     // keyboard ball movement
     {
-        double speed = game->keybd_ball.speed;
+        double speed = game->player.speed;
         if (input->keys_pressed[SDL_SCANCODE_LSHIFT] || input->keys_pressed[SDL_SCANCODE_RSHIFT])
         {
-            speed *= 0.65;
+            speed *= 0.6;
         }
         v2 offset_dir = {0, 0};
         if (input->keys_pressed[SDL_SCANCODE_UP])
@@ -397,23 +398,23 @@ void game_state_update(game_state_t *game, input_t *input, double dt)
         {
             offset_dir = math_normalize(offset_dir);
         }
-        game->keybd_ball.pos += offset_dir * speed * dt;
+        game->player.pos += offset_dir * speed * dt;
 
-        if (game->keybd_ball.pos.x < 0)
+        if (game->player.pos.x < 0)
         {
-            game->keybd_ball.pos.x = 0;
+            game->player.pos.x = 0;
         }
-        if (game->keybd_ball.pos.y < 0)
+        if (game->player.pos.y < 0)
         {
-            game->keybd_ball.pos.y = 0;
+            game->player.pos.y = 0;
         }
-        if (game->keybd_ball.pos.x > DEFAULT_SCREEN_WIDTH)
+        if (game->player.pos.x > DEFAULT_SCREEN_WIDTH)
         {
-            game->keybd_ball.pos.x = DEFAULT_SCREEN_WIDTH;
+            game->player.pos.x = DEFAULT_SCREEN_WIDTH;
         }
-        if (game->keybd_ball.pos.y > DEFAULT_SCREEN_HEIGHT)
+        if (game->player.pos.y > DEFAULT_SCREEN_HEIGHT)
         {
-            game->keybd_ball.pos.y = DEFAULT_SCREEN_HEIGHT;
+            game->player.pos.y = DEFAULT_SCREEN_HEIGHT;
         }
     }
 
@@ -475,7 +476,7 @@ void game_state_render(game_state_t *game, renderer_t *renderer)
     assert(renderer);
     assert(renderer->sdl);
 
-    // repaint background
+    // render background
     SDL_SetRenderDrawColor(renderer->sdl,
                            (u8) round(game->background_color.red),
                            (u8) round(game->background_color.green),
@@ -483,39 +484,64 @@ void game_state_render(game_state_t *game, renderer_t *renderer)
                            (u8) round(game->background_color.alpha));
     SDL_RenderClear(renderer->sdl);
 
-    // render balls
+    // declare rect that will store the render destination (on screen)
+	SDL_Rect rect;
+
+	// render player
+	rect.x = (int) round(game->player.pos.x - game->player.w / 2);
+	rect.y = (int) round(game->player.pos.y - game->player.h / 2);
+	rect.w = (int) round(game->player.w);
+	rect.h = (int) round(game->player.h);
+	display_image(renderer, game->player.image_path, &rect, 0, V3(255, 255, 255));
+
+	// render enemy
+	rect.x = (int) round(game->enemy.pos.x - game->enemy.w / 2);
+	rect.y = (int) round(game->enemy.pos.y - game->enemy.h / 2);
+	rect.w = (int) round(game->enemy.w);
+	rect.h = (int) round(game->enemy.h);
+	display_image(renderer, game->enemy.image_path, &rect, 0, V3(255, 255, 255));
+
+	// render particles
+	std::list<particle_t>::iterator it, end;
+	for (it = game->particles->begin(), end = game->particles->end(); it != end; ++it)
+	{
+		particle_t *particle = &(*it);
+
+		rect.x = (int) round(particle->pos.x - particle->w / 2);
+		rect.y = (int) round(particle->pos.y - particle->h / 2);
+		rect.w = (int) round(particle->w);
+		rect.h = (int) round(particle->h);
+
+		display_image(renderer, particle->image_path, &rect, 0, particle->color);
+	}
+
+    // render enemy health
+    int enemy_hearts = (int) ceil((double) game->enemy.health / HP_PER_HEART);
+    for (int i = 1; i <= enemy_hearts; i++)
     {
-        SDL_Rect rect;
+        // destination rect
+        rect.w = HP_UNIT_SIZE;
+        rect.h = HP_UNIT_SIZE;
+        // TODO: change to current screen width
+        rect.x = DEFAULT_SCREEN_WIDTH - HP_UNIT_SIZE * i;
+        rect.y = ENEMY_HP_BAR_Y;
 
-        // keyboard ball
-        rect.x = (int) round(game->keybd_ball.pos.x - game->keybd_ball.w / 2);
-        rect.y = (int) round(game->keybd_ball.pos.y - game->keybd_ball.h / 2);
-        rect.w = (int) round(game->keybd_ball.w);
-        rect.h = (int) round(game->keybd_ball.h);
-        display_image(renderer, game->keybd_ball.image_path, &rect, V3(255, 255, 255));
-
-        // enemy ball
-        rect.x = (int) round(game->enemy.pos.x - game->enemy.w / 2);
-        rect.y = (int) round(game->enemy.pos.y - game->enemy.h / 2);
-        rect.w = (int) round(game->enemy.w);
-        rect.h = (int) round(game->enemy.h);
-        display_image(renderer, game->enemy.image_path, &rect, V3(255, 255, 255));
-    }
-
-    // render particles
-    {
-        SDL_Rect rect;
-        std::list<particle_t>::iterator it, end;
-        for (it = game->particles->begin(), end = game->particles->end(); it != end; ++it)
+        // render only part of the last heart if current hp is not a multiple of 100
+        int hp_in_heart = game->enemy.health - HP_PER_HEART * (i - 1);
+        if (hp_in_heart > HP_PER_HEART)
         {
-            particle_t *particle = &(*it);
-
-            rect.x = (int) round(particle->pos.x - particle->w / 2);
-            rect.y = (int) round(particle->pos.y - particle->h / 2);
-            rect.w = (int) round(particle->w);
-            rect.h = (int) round(particle->h);
-
-            display_image(renderer, particle->image_path, &rect, particle->color);
+            display_image(renderer, HP_IMG_PATH, &rect, 0, V3(255, 255, 255));
+        }
+        else
+        {
+            SDL_Rect source = {};
+            double percentage_to_fill = ((double) hp_in_heart / HP_PER_HEART) * HP_IMG_SIZE;
+            source.w = (int) percentage_to_fill;
+            source.h = (int) HP_IMG_SIZE;
+            source.x = HP_IMG_SIZE - source.w;
+            rect.x += HP_IMG_SIZE - source.w;
+            rect.w = source.w;
+            display_image(renderer, HP_IMG_PATH, &rect, &source, V3(255, 255, 255));
         }
     }
 }

@@ -30,7 +30,7 @@ int main(int, char *[])
     }
 
     // create window
-    SDL_Window* window = SDL_CreateWindow("SDL Tutorial",
+    SDL_Window* window = SDL_CreateWindow("Bullet Hell",
                                           SDL_WINDOWPOS_UNDEFINED,
                                           SDL_WINDOWPOS_UNDEFINED,
                                           DEFAULT_SCREEN_WIDTH,

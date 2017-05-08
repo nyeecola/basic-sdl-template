@@ -10,3 +10,10 @@
 
 // TEST ASSETS
 #define BALL_IMG_PATH "assets/ball.png"
+#define HP_IMG_PATH "assets/life.png"
+#define HP_IMG_SIZE 24
+
+// LAYOUT
+#define HP_PER_HEART 100
+#define HP_UNIT_SIZE 24
+#define ENEMY_HP_BAR_Y 0

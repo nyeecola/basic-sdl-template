@@ -21,7 +21,7 @@ input_t *initialize_input()
 // if not, render and display it
 // if yes, just display it
 // TODO: verify if this is too slow (because of the conversion to std::string every call
-void display_image(renderer_t *renderer, const char *char_path, SDL_Rect *rect, v3 color)
+void display_image(renderer_t *renderer, const char *char_path, SDL_Rect *dest, SDL_Rect *source, v3 color)
 {
     std::string path(char_path);
     if (!renderer->images.count(path))
@@ -31,6 +31,6 @@ void display_image(renderer_t *renderer, const char *char_path, SDL_Rect *rect, 
     }
 
     SDL_SetTextureColorMod(renderer->images[char_path], (u8) color.x, (u8) color.y, (u8) color.z);
-    SDL_RenderCopy(renderer->sdl, renderer->images[char_path], 0, rect);
+    SDL_RenderCopy(renderer->sdl, renderer->images[char_path], source, dest);
 }
 

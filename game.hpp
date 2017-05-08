@@ -1,6 +1,6 @@
 enum entity_type_e
 {
-    ENTITY_BALL,
+    ENTITY_PLAYER = 1,
     ENTITY_ENEMY,
 };
 
@@ -65,7 +65,8 @@ typedef struct
     int w;
     int h;
 
-    double health;
+	// should be a value between 0 and 1000
+    int health;
 
     entity_type_e type;
     union
@@ -92,8 +93,7 @@ typedef struct
 {
     color_t background_color;
 
-    entity_t mouse_ball;
-    entity_t keybd_ball;
+    entity_t player;
     entity_t enemy;
 
 	// TODO: start allocating particles on the heap
