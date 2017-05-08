@@ -1,16 +1,15 @@
 ### TODO ###
 
-- Find a way to minimize "forgot to set something" problems (probably create a wrapper function when really needed) (but it is costly)
-- Add support for multiple attacks (including lasers)
-- Add damage and health
+- Add support for more attacks (including lasers)
 - Add hero's health
-- Add hero's attacks
+- Add powerups for hero's basic attacks
+- Add hero's special attacks
 - Add hero's slowmo
 - Create score system
 - Create start menu
 - Create pause menu
 - Add audio system
 
-// optimizations
+// for optimizations
 - Create a linked list
 - Create a hash set

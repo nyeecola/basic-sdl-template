@@ -194,15 +194,15 @@ void ai_do_actions(game_state_t *game, double dt)
             }
         }
 
-        if (enemy->enemy_data.time_since_fight_started > 20)
-        {
-            enemy->enemy_data.forced_movement = false;
-        }
-
         if (enemy->enemy_data.time_since_fight_started > 23 &&
             enemy->enemy_data.time_since_fight_started < 27)
         {
             do_circular_atk(game->particles, enemy->type, &enemy->enemy_data.atks[6], dt);
+        }
+
+        if (enemy->enemy_data.time_since_fight_started > 27)
+        {
+            enemy->enemy_data.forced_movement = false;
         }
 
         if (enemy->enemy_data.time_since_fight_started > 30 &&
@@ -230,9 +230,9 @@ game_state_t *game_state_initialize()
     game->particles = new std::list<particle_t *>();
 
     // background_color
-    game->background_color.red = 0;
-    game->background_color.green = 85;
-    game->background_color.blue = 127;
+    game->background_color.red = 60;
+    game->background_color.green = 60;
+    game->background_color.blue = 200;
     game->background_color.alpha = 255;
 
     // keyboard controlled ball
@@ -468,7 +468,7 @@ void do_players_actions(game_state_t *game, input_t *input, double dt)
             int shot_w = 12;
             int shot_h = 38;
             v3 color = V3(255, 255, 255);
-            
+
             v2 pos;
 
             pos.x = game->player.pos.x - 8;
@@ -506,25 +506,38 @@ void do_players_actions(game_state_t *game, input_t *input, double dt)
     // TODO: special attacks
 }
 
-void game_state_update(game_state_t *game, input_t *input, double dt)
+void reset_game(game_state_t **game)
+{
+    std::list<particle_t *>::iterator at, end;
+    for (at = (*game)->particles->begin(), end = (*game)->particles->end(); at != end; ++at)
+    {
+        free(*at);
+    }
+    free((*game)->particles);
+    free(*game);
+    *game = game_state_initialize();
+}
+
+void game_state_update(game_state_t **game, input_t *input, double dt)
 {
     assert(game);
+    assert(*game);
     assert(input);
     assert(dt > 0);
 
     // player's actions movement
     // TODO: remove this check since we'll handle death differently
-    if (game->player.health > 0)
+    if ((*game)->player.health > 0)
     {
-        do_players_actions(game, input, dt);
+        do_players_actions((*game), input, dt);
     }
 
     // perform enemy's actions
-    ai_do_actions(game, dt);
+    ai_do_actions((*game), dt);
 
     // update particles
     std::list<particle_t *>::iterator it, end;
-    for (it = game->particles->begin(), end = game->particles->end(); it != end;)
+    for (it = (*game)->particles->begin(), end = (*game)->particles->end(); it != end;)
     {
         particle_t *particle = *it;
 
@@ -536,15 +549,24 @@ void game_state_update(game_state_t *game, input_t *input, double dt)
             particle->pos.y < -DEFAULT_SCREEN_HEIGHT / 3 ||
             particle->pos.y > DEFAULT_SCREEN_HEIGHT + DEFAULT_SCREEN_HEIGHT / 3)
         {
-            it = game->particles->erase(it);
+            it = (*game)->particles->erase(it);
             free(particle);
             continue;
         }
 
-        if (detect_particle_collision(game, particle))
+        if (detect_particle_collision(*game, particle))
         {
-            it = game->particles->erase(it);
+            it = (*game)->particles->erase(it);
             free(particle);
+
+#if 1
+            if ((*game)->player.health <= 0)
+            {
+                reset_game(game);
+                return;
+            }
+#endif
+
             continue;
         }
 
@@ -553,28 +575,17 @@ void game_state_update(game_state_t *game, input_t *input, double dt)
 
     // update background
     {
-        double multiplier = 100;
-        static bool red_decreasing = false;
-        if (red_decreasing)
-        {
-            game->background_color.red -= multiplier * dt;
-            if (game->background_color.red < 5) red_decreasing = false;
-        }
-        else
-        {
-            game->background_color.red += multiplier * dt;
-            if (game->background_color.red > 250) red_decreasing = true;
-        }
+        double multiplier = 40;
         static bool blue_decreasing = false;
         if (blue_decreasing)
         {
-            game->background_color.blue -= multiplier * dt;
-            if (game->background_color.blue < 5) blue_decreasing = false;
+            (*game)->background_color.blue -= multiplier * dt;
+            if ((*game)->background_color.blue < 120) blue_decreasing = false;
         }
         else
         {
-            game->background_color.blue += multiplier * dt;
-            if (game->background_color.blue > 250) blue_decreasing = true;
+            (*game)->background_color.blue += multiplier * dt;
+            if ((*game)->background_color.blue > 250) blue_decreasing = true;
         }
     }
 }

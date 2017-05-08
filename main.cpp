@@ -91,7 +91,7 @@ int main(int, char *[])
                                 (double) SDL_GetPerformanceFrequency());
 
         // update world for this frame
-        game_state_update(game_state, input, delta_time);
+        game_state_update(&game_state, input, delta_time);
 
         // render frame
         game_state_render(game_state, &renderer);
