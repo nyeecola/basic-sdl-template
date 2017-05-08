@@ -4,6 +4,12 @@ particle_t spawn_particle_towards(v2 pos, v2 vector, double speed, v2 accelerati
 {
     assert(image);
 
+	// DEBUG
+#if 0
+	static int count = 0;
+	printf("count = %d\n", ++count);
+#endif
+
     v2 direction;
     if (!is_null_vector(vector)) direction = math_normalize(vector);
     else direction = vector;
@@ -28,7 +34,7 @@ void update_particle_position(particle_t *particle, double dt)
     //v2 ortho = V2(-particle->velocity.y, particle->velocity.x) * 0.0005;
     //particle->acceleration = rotate_vector(ortho, -0.1f);
 
-    particle->velocity += particle->acceleration;
+    particle->velocity += particle->acceleration * dt;
     particle->pos += particle->velocity * dt;
 }
 
@@ -38,7 +44,7 @@ inline void do_circular_atk(std::list<particle_t> *particles, atk_pattern_t *atk
     // spawn at the given rate
     if (atk->time_since_last_spawn > atk->spawn_rate)
     {
-        atk->time_since_last_spawn = 0;
+        atk->time_since_last_spawn = atk->time_since_last_spawn - atk->spawn_rate + dt;
 
         double x, y;
         for (int i = 0; i < atk->particles_per_spawn; i++)
@@ -142,7 +148,6 @@ void ai_do_actions(game_state_t *game, double dt)
 
             if (enemy->enemy_data.stopped)
             {
-                // TODO: verify if null vector
                 v2 player_dir = game->keybd_ball.pos - enemy->pos;
                 if (is_null_vector(player_dir))
                 {
@@ -279,17 +284,16 @@ game_state_t *game_state_initialize()
                 atk.spawn_loc = atk2_loc;
                 game->enemy.enemy_data.atks[2] = atk;
 
-
                 atk.particle_speed = 70;
 
-                atk.particle_accel = V2(2.2, 6);
+                atk.particle_accel = V2(66, 180);
                 atk.particle_color = V3(180, 180, 255);
                 v2 *atk4_loc = (v2 *) malloc(sizeof(*atk4_loc));
                 *atk4_loc = V2(50, 150);
                 atk.spawn_loc = atk4_loc;
                 game->enemy.enemy_data.atks[4] = atk;
 
-                atk.particle_accel = V2(-2.2, 6);
+                atk.particle_accel = V2(-66, 180);
                 atk.particle_color = V3(255, 180, 180);
                 v2 *atk5_loc = (v2 *) malloc(sizeof(*atk5_loc));
                 *atk5_loc = V2(550, 150);
@@ -316,7 +320,7 @@ game_state_t *game_state_initialize()
                 game->enemy.enemy_data.atks[3] = atk;
             }
 
-            // dense slow circle
+            // dense slow divisor all angles
             {
                 atk_pattern_t atk = {};
                 atk.particle_image = BALL_IMG_PATH;

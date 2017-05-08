@@ -23,8 +23,8 @@ typedef struct
 typedef struct
 {
     v2 *spawn_loc;
-    double spawn_rate;             // in milliseconds
-    double time_since_last_spawn;  // in milliseconds
+    double spawn_rate;             // in seconds
+    double time_since_last_spawn;  // in seconds
     int particles_per_spawn;
     double arc_center;
     double arc_size;
@@ -96,5 +96,6 @@ typedef struct
     entity_t keybd_ball;
     entity_t enemy;
 
+	// TODO: start allocating particles on the heap
     std::list<particle_t> *particles;
 } game_state_t;
