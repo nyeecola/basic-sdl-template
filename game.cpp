@@ -1,6 +1,7 @@
 #include "game.hpp"
 
-particle_t spawn_particle_towards(v2 pos, v2 vector, double speed, v2 acceleration, const char *image, int w, int h, v3 color)
+particle_t *spawn_particle_towards(v2 pos, v2 vector, int owner, double speed, v2 acceleration,
+                                   const char *image, int w, int h, v3 color)
 {
     assert(image);
 
@@ -14,16 +15,15 @@ particle_t spawn_particle_towards(v2 pos, v2 vector, double speed, v2 accelerati
     if (!is_null_vector(vector)) direction = math_normalize(vector);
     else direction = vector;
 
-    // TODO: maybe use malloc, since this is called so many times
-    //       if so, remember to free
-    particle_t particle = {};
-    particle.pos = pos;
-    particle.velocity = direction * speed;
-    particle.acceleration = acceleration;
-    particle.image_path = image;
-    particle.w = w;
-    particle.h = h;
-    particle.color = color;
+    particle_t *particle = (particle_t *) malloc(sizeof(*particle));;
+    particle->owner = (entity_type_e) owner;
+    particle->pos = pos;
+    particle->velocity = direction * speed;
+    particle->acceleration = acceleration;
+    particle->image_path = image;
+    particle->w = w;
+    particle->h = h;
+    particle->color = color;
 
     return particle;
 }
@@ -39,8 +39,42 @@ void update_particle_position(particle_t *particle, double dt)
     particle->pos += particle->velocity * dt;
 }
 
+// handles collisions with enemies and players, also applies it's effects
+// returns true if collided and false if didn't
+bool detect_particle_collision(game_state_t *game, particle_t *particle)
+{
+    // collision detection
+    if (particle->owner == ENTITY_PLAYER)
+    {
+        // TODO: figure out how to check only for current enemies
+        // TODO: create hitbox_t struct
+        //if (pow(particle->pos.x, 2) + pow(particle->pos.y, 2) < pow(game->enemy.hitbox.radius, 2))
+        if (pow(game->enemy.pos.x - particle->pos.x, 2) +
+                pow(game->enemy.pos.y - particle->pos.y, 2)
+            < pow(28, 2))
+        {
+            game->enemy.health -= game->player.player_data.shot_damage;
+            return true;
+        }
+    }
+    // TODO: figure out how to do this based on the enemy
+    else if (particle->owner == ENTITY_ENEMY)
+    {
+        if (pow(game->player.pos.x - particle->pos.x, 2) +
+                pow(game->player.pos.y - particle->pos.y, 2)
+            < pow(5, 2))
+        {
+            // TODO: kill player more appropriately
+            game->player.health = -1;
+            return true;
+        }
+    }
+
+    return false;
+}
+
 // creates a circular attack using the state passed by `atk`
-inline void do_circular_atk(std::list<particle_t> *particles, atk_pattern_t *atk, double dt)
+inline void do_circular_atk(std::list<particle_t *> *particles, int owner, atk_pattern_t *atk, double dt)
 {
     if (atk->time_since_last_spawn > atk->spawn_rate)
     {
@@ -57,14 +91,15 @@ inline void do_circular_atk(std::list<particle_t> *particles, atk_pattern_t *atk
             x = cos(radians);
             y = sin(radians);
 
-            particle_t particle = spawn_particle_towards(*atk->spawn_loc,
-                                                         V2(x, y),
-                                                         atk->particle_speed,
-                                                         atk->particle_accel,
-                                                         atk->particle_image,
-                                                         atk->particle_width,
-                                                         atk->particle_height,
-                                                         atk->particle_color);
+            particle_t *particle = spawn_particle_towards(*atk->spawn_loc,
+                                                          V2(x, y),
+                                                          owner,
+                                                          atk->particle_speed,
+                                                          atk->particle_accel,
+                                                          atk->particle_image,
+                                                          atk->particle_width,
+                                                          atk->particle_height,
+                                                          atk->particle_color);
             particles->push_back(particle);
         }
     }
@@ -124,14 +159,14 @@ void ai_do_actions(game_state_t *game, double dt)
         if (enemy->enemy_data.time_since_fight_started > 5 &&
             enemy->enemy_data.time_since_fight_started < 8)
         {
-            do_circular_atk(game->particles, &enemy->enemy_data.atks[0], dt);
+            do_circular_atk(game->particles, enemy->type, &enemy->enemy_data.atks[0], dt);
         }
 
         if (enemy->enemy_data.time_since_fight_started > 2 &&
             enemy->enemy_data.time_since_fight_started < 9)
         {
-            do_circular_atk(game->particles, &enemy->enemy_data.atks[1], dt);
-            do_circular_atk(game->particles, &enemy->enemy_data.atks[2], dt);
+            do_circular_atk(game->particles, enemy->type, &enemy->enemy_data.atks[1], dt);
+            do_circular_atk(game->particles, enemy->type, &enemy->enemy_data.atks[2], dt);
         }
 
         if (enemy->enemy_data.time_since_fight_started > 10 &&
@@ -155,7 +190,7 @@ void ai_do_actions(game_state_t *game, double dt)
                 }
                 double angle = atan2(player_dir.y, player_dir.x);
                 enemy->enemy_data.atks[3].arc_center = angle;
-                do_circular_atk(game->particles, &enemy->enemy_data.atks[3], dt);
+                do_circular_atk(game->particles, enemy->type, &enemy->enemy_data.atks[3], dt);
             }
         }
 
@@ -167,20 +202,20 @@ void ai_do_actions(game_state_t *game, double dt)
         if (enemy->enemy_data.time_since_fight_started > 23 &&
             enemy->enemy_data.time_since_fight_started < 27)
         {
-            do_circular_atk(game->particles, &enemy->enemy_data.atks[6], dt);
+            do_circular_atk(game->particles, enemy->type, &enemy->enemy_data.atks[6], dt);
         }
 
         if (enemy->enemy_data.time_since_fight_started > 30 &&
             enemy->enemy_data.time_since_fight_started < 34)
         {
-            do_circular_atk(game->particles, &enemy->enemy_data.atks[7], dt);
+            do_circular_atk(game->particles, enemy->type, &enemy->enemy_data.atks[7], dt);
         }
 
         if (enemy->enemy_data.time_since_fight_started > 31 &&
             enemy->enemy_data.time_since_fight_started < 35)
         {
-            do_circular_atk(game->particles, &enemy->enemy_data.atks[4], dt);
-            do_circular_atk(game->particles, &enemy->enemy_data.atks[5], dt);
+            do_circular_atk(game->particles, enemy->type, &enemy->enemy_data.atks[4], dt);
+            do_circular_atk(game->particles, enemy->type, &enemy->enemy_data.atks[5], dt);
         }
     }
 
@@ -192,7 +227,7 @@ void ai_do_actions(game_state_t *game, double dt)
 game_state_t *game_state_initialize()
 {
     game_state_t *game = (game_state_t *) calloc(1, sizeof(*game));
-    game->particles = new std::list<particle_t>();
+    game->particles = new std::list<particle_t *>();
 
     // background_color
     game->background_color.red = 0;
@@ -207,6 +242,8 @@ game_state_t *game_state_initialize()
     game->player.h = 42;
     game->player.pos = V2(300, 700);
     game->player.speed = 200;
+    game->player.health = 1;
+    game->player.player_data.shot_damage = 1;
 
     // enemy
     {
@@ -218,7 +255,7 @@ game_state_t *game_state_initialize()
         game->enemy.pos = V2(400, 60);
         game->enemy.speed = 60;
         game->enemy.enemy_data.time_since_fight_started = 0.0;
-		game->enemy.health = 300;
+		game->enemy.health = 600;
 
         // movement
         {
@@ -324,12 +361,12 @@ game_state_t *game_state_initialize()
             {
                 atk_pattern_t atk = {};
                 atk.particle_image = BALL_IMG_PATH;
-                atk.particle_width = 12;
-                atk.particle_height = 12;
+                atk.particle_width = 18;
+                atk.particle_height = 18;
                 atk.particle_color = V3(255, 0, 255);
                 atk.spawn_loc = &game->enemy.pos;
                 atk.spawn_rate = 0.06;
-                atk.particles_per_spawn = 16;
+                atk.particles_per_spawn = 14;
                 atk.arc_center = 0;
                 atk.arc_size = PI * 2;
                 atk.angle_step = 0.001;
@@ -339,7 +376,7 @@ game_state_t *game_state_initialize()
                 game->enemy.enemy_data.atks[6] = atk;
             }
 
-            // fast spiral from enemy
+            // fast all angles non-rotating attack from enemy
             {
                 atk_pattern_t atk = {};
                 atk.particle_image = BALL_IMG_PATH;
@@ -364,13 +401,13 @@ game_state_t *game_state_initialize()
     return game;
 }
 
-void game_state_update(game_state_t *game, input_t *input, double dt)
+void do_players_actions(game_state_t *game, input_t *input, double dt)
 {
     assert(game);
     assert(input);
     assert(dt > 0);
 
-    // keyboard ball movement
+    // movement
     {
         double speed = game->player.speed;
         if (input->keys_pressed[SDL_SCANCODE_LSHIFT] || input->keys_pressed[SDL_SCANCODE_RSHIFT])
@@ -418,14 +455,78 @@ void game_state_update(game_state_t *game, input_t *input, double dt)
         }
     }
 
+    // attack
+    {
+        // FIXME: not sure if needed (may cause problems? like firing inconsistently)
+        double excess_time = game->player.player_data.time_since_last_shot - PLAYER_SHOT_COOLDOWN;
+        if (input->keys_pressed[SDL_SCANCODE_Z] && excess_time > 0)
+        {
+            game->player.player_data.time_since_last_shot = dt;
+            v2 dir = V2(0, -1);
+            v2 accel = V2(0, 0);
+            int shot_speed = 600;
+            int shot_w = 12;
+            int shot_h = 38;
+            v3 color = V3(255, 255, 255);
+            
+            v2 pos;
+
+            pos.x = game->player.pos.x - 8;
+            pos.y = game->player.pos.y;
+            particle_t *particle = spawn_particle_towards(pos, dir, ENTITY_PLAYER,
+                                                          shot_speed, accel, BALL_IMG_PATH,
+                                                          shot_w, shot_h, color);
+            game->particles->push_back(particle);
+
+            pos.x = game->player.pos.x - 4;
+            pos.y = game->player.pos.y;
+            particle = spawn_particle_towards(pos, dir, ENTITY_PLAYER,
+                                              shot_speed, accel, BALL_IMG_PATH,
+                                              shot_w, shot_h, color);
+            game->particles->push_back(particle);
+
+            pos.x = game->player.pos.x + 4;
+            pos.y = game->player.pos.y;
+            particle = spawn_particle_towards(pos, dir, ENTITY_PLAYER,
+                                              shot_speed, accel, BALL_IMG_PATH,
+                                              shot_w, shot_h, color);
+            game->particles->push_back(particle);
+
+            pos.x = game->player.pos.x + 8;
+            pos.y = game->player.pos.y;
+            particle = spawn_particle_towards(pos, dir, ENTITY_PLAYER,
+                                              shot_speed, accel, BALL_IMG_PATH,
+                                              shot_w, shot_h, color);
+            game->particles->push_back(particle);
+        }
+
+        game->player.player_data.time_since_last_shot += dt;
+    }
+
+    // TODO: special attacks
+}
+
+void game_state_update(game_state_t *game, input_t *input, double dt)
+{
+    assert(game);
+    assert(input);
+    assert(dt > 0);
+
+    // player's actions movement
+    // TODO: remove this check since we'll handle death differently
+    if (game->player.health > 0)
+    {
+        do_players_actions(game, input, dt);
+    }
+
     // perform enemy's actions
     ai_do_actions(game, dt);
 
     // update particles
-    std::list<particle_t>::iterator it, end;
+    std::list<particle_t *>::iterator it, end;
     for (it = game->particles->begin(), end = game->particles->end(); it != end;)
     {
-        particle_t *particle = &(*it);
+        particle_t *particle = *it;
 
         update_particle_position(particle, dt);
 
@@ -436,6 +537,14 @@ void game_state_update(game_state_t *game, input_t *input, double dt)
             particle->pos.y > DEFAULT_SCREEN_HEIGHT + DEFAULT_SCREEN_HEIGHT / 3)
         {
             it = game->particles->erase(it);
+            free(particle);
+            continue;
+        }
+
+        if (detect_particle_collision(game, particle))
+        {
+            it = game->particles->erase(it);
+            free(particle);
             continue;
         }
 
@@ -487,12 +596,16 @@ void game_state_render(game_state_t *game, renderer_t *renderer)
     // declare rect that will store the render destination (on screen)
 	SDL_Rect rect;
 
-	// render player
-	rect.x = (int) round(game->player.pos.x - game->player.w / 2);
-	rect.y = (int) round(game->player.pos.y - game->player.h / 2);
-	rect.w = (int) round(game->player.w);
-	rect.h = (int) round(game->player.h);
-	display_image(renderer, game->player.image_path, &rect, 0, V3(255, 255, 255));
+    // render player
+    // TODO: remove this check since we'll handle death differently
+    if (game->player.health > 0)
+    {
+        rect.x = (int) round(game->player.pos.x - game->player.w / 2);
+        rect.y = (int) round(game->player.pos.y - game->player.h / 2);
+        rect.w = (int) round(game->player.w);
+        rect.h = (int) round(game->player.h);
+        display_image(renderer, game->player.image_path, &rect, 0, V3(255, 255, 255));
+    }
 
 	// render enemy
 	rect.x = (int) round(game->enemy.pos.x - game->enemy.w / 2);
@@ -502,10 +615,10 @@ void game_state_render(game_state_t *game, renderer_t *renderer)
 	display_image(renderer, game->enemy.image_path, &rect, 0, V3(255, 255, 255));
 
 	// render particles
-	std::list<particle_t>::iterator it, end;
+	std::list<particle_t *>::iterator it, end;
 	for (it = game->particles->begin(), end = game->particles->end(); it != end; ++it)
 	{
-		particle_t *particle = &(*it);
+		particle_t *particle = *it;
 
 		rect.x = (int) round(particle->pos.x - particle->w / 2);
 		rect.y = (int) round(particle->pos.y - particle->h / 2);

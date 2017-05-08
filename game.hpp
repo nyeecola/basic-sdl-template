@@ -57,6 +57,12 @@ typedef struct
 
 typedef struct
 {
+    double time_since_last_shot;
+    int shot_damage;
+} player_only_t;
+
+typedef struct
+{
     v2 pos;
     double speed;
     // TODO: consider adding velocity and acceleration here (instead of speed)
@@ -72,6 +78,7 @@ typedef struct
     union
     {
         enemy_only_t enemy_data;
+        player_only_t player_data;
     };
 } entity_t;
 
@@ -87,6 +94,8 @@ typedef struct
     int w;
     int h;
     v3 color;
+
+    entity_type_e owner;
 } particle_t;
 
 typedef struct
@@ -97,5 +106,5 @@ typedef struct
     entity_t enemy;
 
 	// TODO: start allocating particles on the heap
-    std::list<particle_t> *particles;
+    std::list<particle_t *> *particles;
 } game_state_t;

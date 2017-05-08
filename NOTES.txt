@@ -3,6 +3,7 @@
 - Find a way to minimize "forgot to set something" problems (probably create a wrapper function when really needed) (but it is costly)
 - Add support for multiple attacks (including lasers)
 - Add damage and health
+- Add hero's health
 - Add hero's attacks
 - Add hero's slowmo
 - Create score system

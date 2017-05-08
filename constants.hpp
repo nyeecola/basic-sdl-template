@@ -14,6 +14,11 @@
 #define HP_IMG_SIZE 24
 
 // LAYOUT
-#define HP_PER_HEART 100
+#define HP_PER_HEART 200
 #define HP_UNIT_SIZE 24
 #define ENEMY_HP_BAR_Y 0
+
+// PLAYER
+// in seconds
+#define PLAYER_SHOT_COOLDOWN 0.1
+#define PLAYER_HITBOX_RADIUS 5
