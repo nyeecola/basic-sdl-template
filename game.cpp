@@ -62,7 +62,7 @@ bool detect_particle_collision(game_state_t *game, particle_t *particle)
     {
         if (pow(game->player.pos.x - particle->pos.x, 2) +
                 pow(game->player.pos.y - particle->pos.y, 2)
-            < pow(5, 2))
+            < pow(particle->w / 4, 2))
         {
             // TODO: kill player more appropriately
             game->player.health = -1;
@@ -217,6 +217,11 @@ void ai_do_actions(game_state_t *game, double dt)
             do_circular_atk(game->particles, enemy->type, &enemy->enemy_data.atks[4], dt);
             do_circular_atk(game->particles, enemy->type, &enemy->enemy_data.atks[5], dt);
         }
+
+        if (enemy->enemy_data.time_since_fight_started > 35)
+        {
+            do_circular_atk(game->particles, enemy->type, &enemy->enemy_data.atks[8], dt);
+        }
     }
 
     enemy->enemy_data.time_since_fight_started += dt;
@@ -284,7 +289,6 @@ game_state_t *game_state_initialize()
                 atk.arc_center = 0;
                 atk.arc_size = PI * 2;
                 atk.angle_step = 0.0;
-                atk.last_angle = 0.0;
                 atk.particle_speed = 250;
                 atk.particle_accel = V2(0, 0);
                 game->enemy.enemy_data.atks[0] = atk;
@@ -303,7 +307,6 @@ game_state_t *game_state_initialize()
                 atk.arc_center = 0;
                 atk.arc_size = PI * 2;
                 atk.angle_step = 0.006;
-                atk.last_angle = 0.0;
                 atk.particle_speed = 150;
                 atk.particle_accel = V2(0, 0);
 
@@ -351,7 +354,6 @@ game_state_t *game_state_initialize()
                 atk.arc_center = PI / 2 + ((PI / 16) / atk.particles_per_spawn) / 2;
                 atk.arc_size = PI / 16 + (PI / 16) / atk.particles_per_spawn;
                 atk.angle_step = 0.0;
-                atk.last_angle = 0.0;
                 atk.particle_speed = 500;
                 atk.particle_accel = V2(0, 0);
                 game->enemy.enemy_data.atks[3] = atk;
@@ -370,7 +372,6 @@ game_state_t *game_state_initialize()
                 atk.arc_center = 0;
                 atk.arc_size = PI * 2;
                 atk.angle_step = 0.001;
-                atk.last_angle = 0.0;
                 atk.particle_speed = 85;
                 atk.particle_accel = V2(0, 0);
                 game->enemy.enemy_data.atks[6] = atk;
@@ -389,12 +390,28 @@ game_state_t *game_state_initialize()
                 atk.arc_center = 0;
                 atk.arc_size = PI * 2;
                 atk.angle_step = 0.0;
-                atk.last_angle = 0.0;
                 atk.particle_speed = 200;
                 atk.particle_accel = V2(0, 0);
                 game->enemy.enemy_data.atks[7] = atk;
             }
 
+            // slow spiral from enemy
+            {
+                atk_pattern_t atk = {};
+                atk.particle_image = BALL_IMG_PATH;
+                atk.particle_width = 80;
+                atk.particle_height = 80;
+                atk.particle_color = V3(255, 100, 255);
+                atk.spawn_loc = &game->enemy.pos;
+                atk.spawn_rate = 0.45;
+                atk.particles_per_spawn = 14;
+                atk.arc_center = 0;
+                atk.arc_size = PI * 2;
+                atk.angle_step = 0.02;
+                atk.particle_speed = 70;
+                atk.particle_accel = V2(0, 0);
+                game->enemy.enemy_data.atks[8] = atk;
+            }
         }
     }
 
