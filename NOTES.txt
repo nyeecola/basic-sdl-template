@@ -5,6 +5,8 @@
 - Create start menu
 - Create pause menu                                        (in-progress)
 - Add audio system
+- Add better sprites
+- Add animations for hero's movements
 - Add support for more attacks (including lasers)
 - Add hero's slowmo
 - Add powerups for hero's basic attacks

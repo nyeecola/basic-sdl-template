@@ -163,6 +163,34 @@ void game_state_render(game_state_t *game_state, renderer_t *renderer)
             display_image(renderer, particle->image_path, &rect, 0, particle->color);
         }
 
+        // render player special attacks
+        // TODO: figure out if there is a better way to do this (put it somewhere else?)
+        if (game->player.player_data.time_since_hit > 0)
+        {
+            int num_vertices = 80;
+            int px = (int) game->player.pos.x;
+            int py = (int) game->player.pos.y;
+            for (int i = 1; i <= num_vertices; i++)
+            {
+                double radians1 = (2 * PI / num_vertices) * (i - 1);
+
+                int x1 = (int) (cos(radians1) *
+                                get_current_player_hit_circle_radius(game->player));
+                int y1 = (int) (sin(radians1) *
+                                get_current_player_hit_circle_radius(game->player));
+
+                double radians2 = (2 * PI / num_vertices) * i;
+
+                int x2 = (int) (cos(radians2) *
+                                get_current_player_hit_circle_radius(game->player));
+                int y2 = (int) (sin(radians2) *
+                                get_current_player_hit_circle_radius(game->player));
+
+                SDL_SetRenderDrawColor(renderer->sdl, 255, 80, 80, 255);
+                SDL_RenderDrawLine(renderer->sdl, x1 + px, y1 + py, x2 + px, y2 + py);
+            }
+        }
+
         // render enemy health
         int enemy_hearts = (int) ceil((double) game->enemy.health / HP_PER_HEART);
         for (int i = 1; i <= enemy_hearts; i++)

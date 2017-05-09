@@ -222,7 +222,8 @@ void ai_do_actions(game_mode_t *game, double dt)
 
     enemy->enemy_data.time_since_fight_started += dt;
 
-    // TODO: stop attacking once the fight is over (maybe destroy enemy or reset timer to reuse?)
+    // TODO: figure out what to do once the fight is over
+    //       (maybe destroy enemy or reset timer to reuse?)
 }
 
 game_mode_t *initialize_game_mode()

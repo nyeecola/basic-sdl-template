@@ -2,6 +2,8 @@
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
 
+#include <GL/gl.h>
+
 #include <string>
 #include <list>
 #include <map>
@@ -48,6 +50,11 @@ int main(int, char *[])
     {
         force_quit("Failed to create window.\n");
     }
+
+    // TODO: handle error (should just print a message, not crash the program)
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16);
+    glEnable(GL_MULTISAMPLE_ARB);
 
     // create renderer
 #if 0
