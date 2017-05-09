@@ -9,6 +9,7 @@
 - Add support for more attacks (including lasers)
 - Add hero's slowmo
 - Add powerups for hero's basic attacks
+- Stop using asser on malloc's result (instead use exit(1))
 
 // for optimizations
 - Create a linked list

@@ -13,6 +13,7 @@
 #include <cmath>
 #include <cassert>
 
+#include "bin_heap.hpp"
 #include "constants.hpp"
 #include "math.hpp"
 #include "game_mode.hpp"
@@ -20,6 +21,7 @@
 #include "game_state.hpp"
 #include "main.hpp"
 
+#include "bin_heap.cpp"
 #include "math.cpp"
 #include "utils.cpp"
 #include "debug.cpp"
