@@ -14,12 +14,18 @@
 #include <cassert>
 
 #include "constants.hpp"
+#include "math.hpp"
+#include "game_mode.hpp"
+#include "menu_mode.hpp"
+#include "game_state.hpp"
 #include "main.hpp"
 
 #include "math.cpp"
 #include "utils.cpp"
 #include "debug.cpp"
-#include "game.cpp"
+#include "menu_mode.cpp"
+#include "game_mode.cpp"
+#include "game_state.cpp"
 
 int main(int, char *[])
 {
@@ -56,11 +62,14 @@ int main(int, char *[])
     renderer.sdl = sdl_renderer;
 
     // initialization
-    // set seed for RNG
-    input_t *input = initialize_input();
-    game_state_t *game_state = game_state_initialize();
+    // TODO: set seed for RNG
     debug_initialize_text(&renderer);
-
+    input_t *input = initialize_input();
+    game_state_t *game_state = (game_state_t *) calloc(1, sizeof(*game_state));
+    assert(game_state);
+    game_state->game = initialize_game_mode();
+    game_state->menu = initialize_menu_mode();
+    game_state->type = GAME_MODE;
     // main loop
     bool running = true;
     u64 current_counter = SDL_GetPerformanceCounter();
@@ -81,6 +90,20 @@ int main(int, char *[])
                     input->mouse.x = event.motion.x;
                     input->mouse.y = event.motion.y;
                     break;
+                case SDL_KEYDOWN:
+                    if (event.key.keysym.scancode == SDL_SCANCODE_ESCAPE)
+                    {
+                        if (game_state->type == MENU_MODE)
+                        {
+                            game_state->type = GAME_MODE;
+                        }
+                        else if (game_state->type == GAME_MODE)
+                        {
+                            game_state->type = MENU_MODE;
+                        }
+                        break;
+                    }
+                default: break;
             }
         }
 
@@ -88,10 +111,10 @@ int main(int, char *[])
         last_counter = current_counter;
         current_counter = SDL_GetPerformanceCounter();
         delta_time = (double) ((abs(current_counter - last_counter)) /
-                                (double) SDL_GetPerformanceFrequency());
+                               (double) SDL_GetPerformanceFrequency());
 
         // update world for this frame
-        game_state_update(&game_state, input, delta_time);
+        game_state_update(game_state, input, delta_time);
 
         // render frame
         game_state_render(game_state, &renderer);
@@ -99,6 +122,8 @@ int main(int, char *[])
         SDL_RenderPresent(renderer.sdl);
     }
 
+    // TODO: stop using free here (and make cppcheck stop complaining)
+    free(game_state);
     SDL_DestroyRenderer(renderer.sdl);
     SDL_DestroyWindow(window);
     SDL_Quit();

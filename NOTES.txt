@@ -1,14 +1,14 @@
 ### TODO ###
 
-- Add support for more attacks (including lasers)
 - Add hero's health
-- Add powerups for hero's basic attacks
 - Add hero's special attacks
-- Add hero's slowmo
 - Create score system
 - Create start menu
 - Create pause menu
 - Add audio system
+- Add support for more attacks (including lasers)
+- Add hero's slowmo
+- Add powerups for hero's basic attacks
 
 // for optimizations
 - Create a linked list

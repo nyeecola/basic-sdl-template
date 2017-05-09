@@ -105,6 +105,6 @@ typedef struct
     entity_t player;
     entity_t enemy;
 
-	// TODO: start allocating particles on the heap
+    // TODO: start allocating particles on the heap
     std::list<particle_t *> *particles;
-} game_state_t;
+} game_mode_t;

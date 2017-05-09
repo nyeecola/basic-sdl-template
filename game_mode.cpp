@@ -1,5 +1,3 @@
-#include "game.hpp"
-
 particle_t *spawn_particle_towards(v2 pos, v2 vector, int owner, double speed, v2 acceleration,
                                    const char *image, int w, int h, v3 color)
 {
@@ -16,6 +14,7 @@ particle_t *spawn_particle_towards(v2 pos, v2 vector, int owner, double speed, v
     else direction = vector;
 
     particle_t *particle = (particle_t *) malloc(sizeof(*particle));;
+    assert(particle);
     particle->owner = (entity_type_e) owner;
     particle->pos = pos;
     particle->velocity = direction * speed;
@@ -41,7 +40,7 @@ void update_particle_position(particle_t *particle, double dt)
 
 // handles collisions with enemies and players, also applies it's effects
 // returns true if collided and false if didn't
-bool detect_particle_collision(game_state_t *game, particle_t *particle)
+bool detect_particle_collision(game_mode_t *game, particle_t *particle)
 {
     // collision detection
     if (particle->owner == ENTITY_PLAYER)
@@ -74,6 +73,7 @@ bool detect_particle_collision(game_state_t *game, particle_t *particle)
 }
 
 // creates a circular attack using the state passed by `atk`
+// read the atk_pattern_t structure for more information
 inline void do_circular_atk(std::list<particle_t *> *particles, int owner, atk_pattern_t *atk, double dt)
 {
     if (atk->time_since_last_spawn > atk->spawn_rate)
@@ -110,7 +110,7 @@ inline void do_circular_atk(std::list<particle_t *> *particles, int owner, atk_p
 }
 
 // does all ai actions
-void ai_do_actions(game_state_t *game, double dt)
+void ai_do_actions(game_mode_t *game, double dt)
 {
     assert(game);
     assert(dt > 0);
@@ -229,9 +229,10 @@ void ai_do_actions(game_state_t *game, double dt)
     // TODO: stop attacking once the fight is over (maybe destroy enemy or reset timer to reuse?)
 }
 
-game_state_t *game_state_initialize()
+game_mode_t *initialize_game_mode()
 {
-    game_state_t *game = (game_state_t *) calloc(1, sizeof(*game));
+    game_mode_t *game = (game_mode_t *) calloc(1, sizeof(*game));
+    assert(game);
     game->particles = new std::list<particle_t *>();
 
     // background_color
@@ -313,6 +314,7 @@ game_state_t *game_state_initialize()
                 atk.rotation_type = ROTATE_CW;
                 atk.particle_color = V3(180, 180, 255);
                 v2 *atk1_loc = (v2 *) malloc(sizeof(*atk1_loc));
+                assert(atk1_loc);
                 *atk1_loc = V2(50, 150);
                 atk.spawn_loc = atk1_loc;
                 game->enemy.enemy_data.atks[1] = atk;
@@ -320,6 +322,7 @@ game_state_t *game_state_initialize()
                 //atk.rotation_type = ROTATE_CCW;
                 atk.particle_color = V3(255, 180, 180);
                 v2 *atk2_loc = (v2 *) malloc(sizeof(*atk2_loc));
+                assert(atk2_loc);
                 *atk2_loc = V2(550, 150);
                 atk.spawn_loc = atk2_loc;
                 game->enemy.enemy_data.atks[2] = atk;
@@ -329,6 +332,7 @@ game_state_t *game_state_initialize()
                 atk.particle_accel = V2(66, 180);
                 atk.particle_color = V3(180, 180, 255);
                 v2 *atk4_loc = (v2 *) malloc(sizeof(*atk4_loc));
+                assert(atk4_loc);
                 *atk4_loc = V2(50, 150);
                 atk.spawn_loc = atk4_loc;
                 game->enemy.enemy_data.atks[4] = atk;
@@ -336,6 +340,7 @@ game_state_t *game_state_initialize()
                 atk.particle_accel = V2(-66, 180);
                 atk.particle_color = V3(255, 180, 180);
                 v2 *atk5_loc = (v2 *) malloc(sizeof(*atk5_loc));
+                assert(atk5_loc);
                 *atk5_loc = V2(550, 150);
                 atk.spawn_loc = atk5_loc;
                 game->enemy.enemy_data.atks[5] = atk;
@@ -418,7 +423,21 @@ game_state_t *game_state_initialize()
     return game;
 }
 
-void do_players_actions(game_state_t *game, input_t *input, double dt)
+game_mode_t *reset_game(game_mode_t *game)
+{
+    std::list<particle_t *>::iterator at, end;
+    for (at = game->particles->begin(), end = game->particles->end();
+         at != end;
+         ++at)
+    {
+        free(*at);
+    }
+    free(game->particles);
+    free(game);
+    return initialize_game_mode();
+}
+
+void do_players_actions(game_mode_t *game, input_t *input, double dt)
 {
     assert(game);
     assert(input);
@@ -523,166 +542,3 @@ void do_players_actions(game_state_t *game, input_t *input, double dt)
     // TODO: special attacks
 }
 
-void reset_game(game_state_t **game)
-{
-    std::list<particle_t *>::iterator at, end;
-    for (at = (*game)->particles->begin(), end = (*game)->particles->end(); at != end; ++at)
-    {
-        free(*at);
-    }
-    free((*game)->particles);
-    free(*game);
-    *game = game_state_initialize();
-}
-
-void game_state_update(game_state_t **game, input_t *input, double dt)
-{
-    assert(game);
-    assert(*game);
-    assert(input);
-    assert(dt > 0);
-
-    // player's actions movement
-    // TODO: remove this check since we'll handle death differently
-    if ((*game)->player.health > 0)
-    {
-        do_players_actions((*game), input, dt);
-    }
-
-    // perform enemy's actions
-    ai_do_actions((*game), dt);
-
-    // update particles
-    std::list<particle_t *>::iterator it, end;
-    for (it = (*game)->particles->begin(), end = (*game)->particles->end(); it != end;)
-    {
-        particle_t *particle = *it;
-
-        update_particle_position(particle, dt);
-
-        // TODO: use current instead of default (we don't have current yet :()
-        if (particle->pos.x < -DEFAULT_SCREEN_WIDTH / 3 ||
-            particle->pos.x > DEFAULT_SCREEN_WIDTH + DEFAULT_SCREEN_WIDTH / 3 ||
-            particle->pos.y < -DEFAULT_SCREEN_HEIGHT / 3 ||
-            particle->pos.y > DEFAULT_SCREEN_HEIGHT + DEFAULT_SCREEN_HEIGHT / 3)
-        {
-            it = (*game)->particles->erase(it);
-            free(particle);
-            continue;
-        }
-
-        if (detect_particle_collision(*game, particle))
-        {
-            it = (*game)->particles->erase(it);
-            free(particle);
-
-#if 1
-            if ((*game)->player.health <= 0)
-            {
-                reset_game(game);
-                return;
-            }
-#endif
-
-            continue;
-        }
-
-        ++it;
-    }
-
-    // update background
-    {
-        double multiplier = 40;
-        static bool blue_decreasing = false;
-        if (blue_decreasing)
-        {
-            (*game)->background_color.blue -= multiplier * dt;
-            if ((*game)->background_color.blue < 120) blue_decreasing = false;
-        }
-        else
-        {
-            (*game)->background_color.blue += multiplier * dt;
-            if ((*game)->background_color.blue > 250) blue_decreasing = true;
-        }
-    }
-}
-
-void game_state_render(game_state_t *game, renderer_t *renderer)
-{
-    assert(game);
-    assert(renderer);
-    assert(renderer->sdl);
-
-    // render background
-    SDL_SetRenderDrawColor(renderer->sdl,
-                           (u8) round(game->background_color.red),
-                           (u8) round(game->background_color.green),
-                           (u8) round(game->background_color.blue),
-                           (u8) round(game->background_color.alpha));
-    SDL_RenderClear(renderer->sdl);
-
-    // declare rect that will store the render destination (on screen)
-	SDL_Rect rect;
-
-    // render player
-    // TODO: remove this check since we'll handle death differently
-    if (game->player.health > 0)
-    {
-        rect.x = (int) round(game->player.pos.x - game->player.w / 2);
-        rect.y = (int) round(game->player.pos.y - game->player.h / 2);
-        rect.w = (int) round(game->player.w);
-        rect.h = (int) round(game->player.h);
-        display_image(renderer, game->player.image_path, &rect, 0, V3(255, 255, 255));
-    }
-
-	// render enemy
-	rect.x = (int) round(game->enemy.pos.x - game->enemy.w / 2);
-	rect.y = (int) round(game->enemy.pos.y - game->enemy.h / 2);
-	rect.w = (int) round(game->enemy.w);
-	rect.h = (int) round(game->enemy.h);
-	display_image(renderer, game->enemy.image_path, &rect, 0, V3(255, 255, 255));
-
-	// render particles
-	std::list<particle_t *>::iterator it, end;
-	for (it = game->particles->begin(), end = game->particles->end(); it != end; ++it)
-	{
-		particle_t *particle = *it;
-
-		rect.x = (int) round(particle->pos.x - particle->w / 2);
-		rect.y = (int) round(particle->pos.y - particle->h / 2);
-		rect.w = (int) round(particle->w);
-		rect.h = (int) round(particle->h);
-
-		display_image(renderer, particle->image_path, &rect, 0, particle->color);
-	}
-
-    // render enemy health
-    int enemy_hearts = (int) ceil((double) game->enemy.health / HP_PER_HEART);
-    for (int i = 1; i <= enemy_hearts; i++)
-    {
-        // destination rect
-        rect.w = HP_UNIT_SIZE;
-        rect.h = HP_UNIT_SIZE;
-        // TODO: change to current screen width
-        rect.x = DEFAULT_SCREEN_WIDTH - HP_UNIT_SIZE * i;
-        rect.y = ENEMY_HP_BAR_Y;
-
-        // render only part of the last heart if current hp is not a multiple of 100
-        int hp_in_heart = game->enemy.health - HP_PER_HEART * (i - 1);
-        if (hp_in_heart > HP_PER_HEART)
-        {
-            display_image(renderer, HP_IMG_PATH, &rect, 0, V3(255, 255, 255));
-        }
-        else
-        {
-            SDL_Rect source = {};
-            double percentage_to_fill = ((double) hp_in_heart / HP_PER_HEART) * HP_IMG_SIZE;
-            source.w = (int) percentage_to_fill;
-            source.h = (int) HP_IMG_SIZE;
-            source.x = HP_IMG_SIZE - source.w;
-            rect.x += HP_IMG_SIZE - source.w;
-            rect.w = source.w;
-            display_image(renderer, HP_IMG_PATH, &rect, &source, V3(255, 255, 255));
-        }
-    }
-}

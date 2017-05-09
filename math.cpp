@@ -1,5 +1,3 @@
-#include "math.hpp"
-
 inline v2 V2(double x, double y)
 {
     v2 vector;
