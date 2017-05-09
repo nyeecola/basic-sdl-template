@@ -46,11 +46,8 @@ bool detect_particle_collision(game_mode_t *game, particle_t *particle)
     if (particle->owner == ENTITY_PLAYER)
     {
         // TODO: figure out how to check only for current enemies
-        // TODO: create hitbox_t struct
-        //if (pow(particle->pos.x, 2) + pow(particle->pos.y, 2) < pow(game->enemy.hitbox.radius, 2))
-        if (pow(game->enemy.pos.x - particle->pos.x, 2) +
-                pow(game->enemy.pos.y - particle->pos.y, 2)
-            < pow(28, 2))
+        // TODO: create hitbox_t struct for particles
+        if (test_point_in_circle(particle->pos, game->enemy.pos, 28))
         {
             game->enemy.health -= game->player.player_data.shot_damage;
             return true;
@@ -59,12 +56,11 @@ bool detect_particle_collision(game_mode_t *game, particle_t *particle)
     // TODO: figure out how to do this based on the enemy
     else if (particle->owner == ENTITY_ENEMY)
     {
-        if (pow(game->player.pos.x - particle->pos.x, 2) +
-                pow(game->player.pos.y - particle->pos.y, 2)
-            < pow(particle->w / 4, 2))
+        // TODO: create hitbox_t struct for particles
+        if (test_point_in_circle(particle->pos, game->player.pos, particle->w / 4))
         {
-            // TODO: kill player more appropriately
-            game->player.health = -1;
+            game->player.health--;
+            game->player.player_data.hit = true;
             return true;
         }
     }
@@ -248,7 +244,7 @@ game_mode_t *initialize_game_mode()
     game->player.h = 42;
     game->player.pos = V2(300, 700);
     game->player.speed = 200;
-    game->player.health = 1;
+    game->player.health = 3;
     game->player.player_data.shot_damage = 1;
 
     // enemy
@@ -425,6 +421,8 @@ game_mode_t *initialize_game_mode()
 
 game_mode_t *reset_game(game_mode_t *game)
 {
+    assert(game);
+
     std::list<particle_t *>::iterator at, end;
     for (at = game->particles->begin(), end = game->particles->end();
          at != end;

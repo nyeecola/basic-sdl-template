@@ -34,3 +34,12 @@ void display_image(renderer_t *renderer, const char *char_path, SDL_Rect *dest, 
     SDL_RenderCopy(renderer->sdl, renderer->images[char_path], source, dest);
 }
 
+inline bool test_point_in_circle(v2 point, v2 center, double radius)
+{
+    if (pow(center.x - point.x, 2) + pow(center.y - point.y, 2) < pow(radius, 2))
+    {
+        return true;
+    }
+
+    return false;
+}
