@@ -43,3 +43,13 @@ inline bool test_point_in_circle(v2 point, v2 center, double radius)
 
     return false;
 }
+
+inline double get_current_player_hit_circle_radius(entity_t entity)
+{
+    assert(entity.type == ENTITY_PLAYER);
+
+    return (PARTICLE_DESTROY_ON_HIT_DURATION *
+            PARTICLE_DESTROY_ON_HIT_DELTA_RADIUS - 
+            PARTICLE_DESTROY_ON_HIT_DELTA_RADIUS *
+            entity.player_data.time_since_hit);
+}

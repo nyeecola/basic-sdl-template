@@ -1,6 +1,5 @@
 ### TODO ###
 
-- Add hero's health                                        (in-progress)
 - Add hero's special attacks
 - Create score system
 - Create start menu

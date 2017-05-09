@@ -42,20 +42,54 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt)
             {
                 it = game->particles->erase(it);
                 free(particle);
-
-#if 1
-                if (game->player.health <= 0)
-                {
-                    game_state->game = reset_game(game_state->game);
-                    return;
-                }
-#endif
-
                 continue;
             }
 
             ++it;
         }
+
+        // handle player hit
+#if 1
+        {
+            if (game->player.player_data.hit)
+            {
+                game->player.player_data.hit = false;
+                game->player.player_data.time_since_hit = PARTICLE_DESTROY_ON_HIT_DURATION;
+
+                // TODO: think about it
+                // game->player.pos = V2(300, 700);
+
+                if (game->player.health <= 0)
+                {
+                    game_state->game = reset_game(game_state->game);
+                    return;
+                }
+            }
+
+            if (game->player.player_data.time_since_hit > 0)
+            {
+                std::list<particle_t *>::iterator it, end;
+                for (it = game->particles->begin(), end = game->particles->end(); it != end;)
+                {
+                    particle_t *particle = *it;
+
+                    if (test_point_in_circle(particle->pos, game->player.pos,
+                                             get_current_player_hit_circle_radius(game->player)) &&
+                        particle->owner != ENTITY_PLAYER)
+                    {
+                        it = game->particles->erase(it);
+                        free(particle);
+                        continue;
+                    }
+
+                    ++it;
+                }
+
+                game->player.player_data.time_since_hit -= dt * PARTICLE_DESTROY_ON_HIT_DELTA_SPEED;
+            }
+        }
+#endif
+
 
         // update background
         {
@@ -102,15 +136,11 @@ void game_state_render(game_state_t *game_state, renderer_t *renderer)
         SDL_Rect rect;
 
         // render player
-        // TODO: remove this check since we'll handle death differently
-        if (game->player.health > 0)
-        {
-            rect.x = (int) round(game->player.pos.x - game->player.w / 2);
-            rect.y = (int) round(game->player.pos.y - game->player.h / 2);
-            rect.w = (int) round(game->player.w);
-            rect.h = (int) round(game->player.h);
-            display_image(renderer, game->player.image_path, &rect, 0, V3(255, 255, 255));
-        }
+        rect.x = (int) round(game->player.pos.x - game->player.w / 2);
+        rect.y = (int) round(game->player.pos.y - game->player.h / 2);
+        rect.w = (int) round(game->player.w);
+        rect.h = (int) round(game->player.h);
+        display_image(renderer, game->player.image_path, &rect, 0, V3(255, 255, 255));
 
         // render enemy
         rect.x = (int) round(game->enemy.pos.x - game->enemy.w / 2);
@@ -164,12 +194,15 @@ void game_state_render(game_state_t *game_state, renderer_t *renderer)
         }
 
         // render player health
-        rect.w = HP_UNIT_SIZE;
-        rect.h = HP_UNIT_SIZE;
-        // TODO: change to current screen width
-        rect.x = DEFAULT_SCREEN_WIDTH - HP_UNIT_SIZE;
-        rect.y = PLAYER_HP_BAR_Y;
-        display_image(renderer, HP_IMG_PATH, &rect, 0, V3(255, 0, 0));
+        for (int i = 1; i <= game->player.health; i++)
+        {
+            rect.w = HP_UNIT_SIZE;
+            rect.h = HP_UNIT_SIZE;
+            // TODO: change to current screen width
+            rect.x = DEFAULT_SCREEN_WIDTH - HP_UNIT_SIZE * i;
+            rect.y = PLAYER_HP_BAR_Y;
+            display_image(renderer, HP_IMG_PATH, &rect, 0, V3(255, 0, 0));
+        }
     }
     else if (game_state->type == MENU_MODE)
     {

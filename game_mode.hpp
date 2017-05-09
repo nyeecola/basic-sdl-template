@@ -59,6 +59,8 @@ typedef struct
 {
     double time_since_last_shot;
     int shot_damage;
+    bool hit;
+    double time_since_hit; // in seconds
 } player_only_t;
 
 typedef struct

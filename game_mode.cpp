@@ -239,6 +239,7 @@ game_mode_t *initialize_game_mode()
 
     // keyboard controlled ball
     game->player = {};
+    game->player.type = ENTITY_PLAYER;
     game->player.image_path = BALL_IMG_PATH;
     game->player.w = 30;
     game->player.h = 42;
@@ -346,12 +347,12 @@ game_mode_t *initialize_game_mode()
             {
                 atk_pattern_t atk = {};
                 atk.particle_image = BALL_IMG_PATH;
-                atk.particle_width = 16;
+                atk.particle_width = 18;
                 atk.particle_height = 22;
                 atk.particle_color = V3(0, 255, 0);
                 atk.spawn_loc = &game->enemy.pos;
                 atk.spawn_rate = 0.1;
-                atk.particles_per_spawn = 8;
+                atk.particles_per_spawn = 10;
                 atk.arc_center = PI / 2 + ((PI / 16) / atk.particles_per_spawn) / 2;
                 atk.arc_size = PI / 16 + (PI / 16) / atk.particles_per_spawn;
                 atk.angle_step = 0.0;
