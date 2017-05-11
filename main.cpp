@@ -36,7 +36,7 @@ int main(int, char *[])
     // initialize video
     if (SDL_Init(SDL_INIT_VIDEO) < 0)
     {
-        force_quit("Failed to initialize SDL.\n");
+        force_quit("Failed to initialize SDL.");
     }
 
     // create window
@@ -48,24 +48,58 @@ int main(int, char *[])
                                           SDL_WINDOW_SHOWN);
     if (!window)
     {
-        force_quit("Failed to create window.\n");
+        force_quit("Failed to create window.");
     }
 
     // TODO: handle error (should just print a message, not crash the program)
+#ifdef GPU
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
     SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 16);
     glEnable(GL_MULTISAMPLE_ARB);
+#endif
 
     // create renderer
-#if 0
-    SDL_Renderer* sdl_renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
-#else
+#ifdef GPU
     SDL_Renderer* sdl_renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+#else
+    SDL_Renderer* sdl_renderer = SDL_CreateRenderer(window, -1, 0);
 #endif
+    puts("----------------------");
+    puts("Video drivers available:");
+    int num_drivers = SDL_GetNumVideoDrivers();
+    for (int i = 0; i < num_drivers; i++)
+    {
+        SDL_RendererInfo info;
+        SDL_GetRenderDriverInfo(i, &info);
+
+        printf("- %s\n", SDL_GetVideoDriver(i));
+        printf("--- name:  %s\n", info.name);
+        printf("--- flags: 0x%08x\n", info.flags);
+        if (info.flags & SDL_RENDERER_ACCELERATED) puts("----- HARDWARE");
+        if (info.flags & SDL_RENDERER_SOFTWARE) puts("----- SOFTWARE");
+        if (info.flags & SDL_RENDERER_PRESENTVSYNC) puts("----- VSYNC");
+        if (info.flags & SDL_RENDERER_TARGETTEXTURE) puts("----- TEXTURES");
+    }
+    puts("----------------------");
+    puts("----------------------");
+    SDL_RendererInfo info;
+    int err = SDL_GetRendererInfo(sdl_renderer, &info);
+    if (err) puts("Error getting renderer info.");
+    else
+    {
+        printf("Currently using:\n");
+        printf("--- name:  %s\n", info.name);
+        printf("--- flags: 0x%08x\n", info.flags);
+        if (info.flags & SDL_RENDERER_ACCELERATED) puts("----- HARDWARE");
+        if (info.flags & SDL_RENDERER_SOFTWARE) puts("----- SOFTWARE");
+        if (info.flags & SDL_RENDERER_PRESENTVSYNC) puts("----- VSYNC");
+        if (info.flags & SDL_RENDERER_TARGETTEXTURE) puts("----- TEXTURES");
+    }
+    puts("----------------------");
     if (!sdl_renderer)
     {
         SDL_DestroyWindow(window);
-        force_quit("Failed to create renderer.\n");
+        force_quit("Failed to create renderer.");
     }
     renderer_t renderer = {};
     renderer.sdl = sdl_renderer;
