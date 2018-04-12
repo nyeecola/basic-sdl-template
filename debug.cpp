@@ -2,8 +2,7 @@ static TTF_Font *global_debug_font = 0;
 static SDL_Texture *global_glyphs[256] = {};
 static SDL_Renderer *global_debug_renderer;
 
-void create_texture_for_glyphs(int index)
-{
+void create_texture_for_glyphs(int index) {
     char str[2] = {(char) index, 0};
 
     // TODO: allow different font colors
@@ -35,8 +34,7 @@ void create_texture_for_glyphs(int index)
 }
 
 // Creates glyphs
-void debug_initialize_text(SDL_Renderer *renderer)
-{
+void debug_initialize_text(SDL_Renderer *renderer) {
     global_debug_renderer = renderer;
 
     if (TTF_Init() == -1) {
@@ -97,8 +95,7 @@ void debug_initialize_text(SDL_Renderer *renderer)
 
 // Draws text on x,y coordinates.
 // FONT_SIZE is multiplied by the scale.
-void debug_draw_text(const char *str, int x, int y, float scale)
-{
+void debug_draw_text(const char *str, int x, int y, float scale) {
     int len = strlen(str);
     for (int i = 0; i < len; i++)
     {
@@ -127,8 +124,7 @@ void debug_draw_text(const char *str, int x, int y, float scale)
 // Draws the average fps on the screen
 // NOTE: this function must be called exactly once every frame in order to give
 //       correct results
-void debug_draw_fps(double dt)
-{
+void debug_draw_fps(double dt) {
     static double timer = 0;
     static int counter = 0;
     static char fps_text[15] = "";

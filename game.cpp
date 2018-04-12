@@ -1,13 +1,9 @@
-#include "game.hpp"
-
-void enemy_move_around(entity_t *enemy, double dt)
-{
+void enemy_move_around(entity_t *enemy, double dt) {
     assert(enemy->type == ENTITY_ENEMY);
     assert(dt > 0);
 
     // if stopped, acquire new target location
-    if (enemy->enemy_data.stopped)    
-    {
+    if (enemy->enemy_data.stopped)    {
         int new_target = rand() % enemy->enemy_data.path_size;
         enemy->enemy_data.target_loc = enemy->enemy_data.path[new_target];
         enemy->enemy_data.stopped = false;
@@ -18,19 +14,15 @@ void enemy_move_around(entity_t *enemy, double dt)
     double magnitude = math_magnitude(offset);
     v2 direction = math_normalize(offset);
     v2 velocity = direction * enemy->speed * dt;
-    if (magnitude < enemy->speed * dt)
-    {
+    if (magnitude < enemy->speed * dt) {
         enemy->pos += offset;
         enemy->enemy_data.stopped = true;
-    }
-    else
-    {
+    } else {
         enemy->pos += velocity;
     }
 }
 
-game_state_t *game_state_initialize(SDL_Renderer *renderer)
-{
+game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     assert(renderer);
 
     game_state_t *game_state = (game_state_t *) malloc(sizeof(*game_state));
@@ -73,27 +65,22 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer)
     return game_state;
 }
 
-void game_state_update(game_state_t *game_state, input_t *input, double dt)
-{
+void game_state_update(game_state_t *game_state, input_t *input, double dt) {
     assert(game_state);
     assert(input);
     assert(dt > 0);
 
     // keyboard ball movement
-    if (input->keys_pressed[SDL_SCANCODE_UP])
-    {
+    if (input->keys_pressed[SDL_SCANCODE_UP]) {
         game_state->keybd_ball.pos.y -= game_state->keybd_ball.speed * dt;
     }
-    if (input->keys_pressed[SDL_SCANCODE_DOWN])
-    {
+    if (input->keys_pressed[SDL_SCANCODE_DOWN]) {
         game_state->keybd_ball.pos.y += game_state->keybd_ball.speed * dt;
     }
-    if (input->keys_pressed[SDL_SCANCODE_LEFT])
-    {
+    if (input->keys_pressed[SDL_SCANCODE_LEFT]) {
         game_state->keybd_ball.pos.x -= game_state->keybd_ball.speed * dt;
     }
-    if (input->keys_pressed[SDL_SCANCODE_RIGHT])
-    {
+    if (input->keys_pressed[SDL_SCANCODE_RIGHT]) {
         game_state->keybd_ball.pos.x += game_state->keybd_ball.speed * dt;
     }
 
@@ -110,32 +97,25 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt)
     {
         double multiplier = 0.1;
         static bool red_decreasing = false;
-        if (red_decreasing)
-        {
+        if (red_decreasing) {
             game_state->background_color.red -= multiplier * dt;
             if (game_state->background_color.red < 5) red_decreasing = false;
-        }
-        else
-        {
+        } else {
             game_state->background_color.red += multiplier * dt;
             if (game_state->background_color.red > 250) red_decreasing = true;
         }
         static bool blue_decreasing = false;
-        if (blue_decreasing)
-        {
+        if (blue_decreasing) {
             game_state->background_color.blue -= multiplier * dt;
             if (game_state->background_color.blue < 5) blue_decreasing = false;
-        }
-        else
-        {
+        } else {
             game_state->background_color.blue += multiplier * dt;
             if (game_state->background_color.blue > 250) blue_decreasing = true;
         }
     }
 }
 
-void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double)
-{
+void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double) {
     assert(game_state);
     assert(renderer);
 
