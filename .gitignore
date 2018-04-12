@@ -31,3 +31,7 @@ build
 
 # Other
 tags
+
+# vim
+*.swp
+*.un
