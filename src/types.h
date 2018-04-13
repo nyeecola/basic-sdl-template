@@ -47,8 +47,7 @@ struct color_t {
 
 // entity types
 enum entity_type_e {
-    ENTITY_BALL,
-    ENTITY_ENEMY,
+    
 };
 
 enum game_mode_e {
@@ -59,10 +58,7 @@ enum game_mode_e {
 
 // enemy specific data
 struct enemy_only_t {
-    bool stopped;
-    v2 target_loc;
-    v2 path[10];
-    int path_size;
+
 };
 
 // entity generic data 
@@ -81,19 +77,28 @@ struct entity_t {
     };
 };
 
+enum tile_type_e {
+    EMPTY,
+    WALL,
+};
+
+struct map_t {
+    int w, h;
+    tile_type_e tile[30][40];
+
+    SDL_Texture *wall_sprite;
+    SDL_Texture *floor_sprite;
+};
+
 // game state data
 struct game_state_t {
     // current game mode
     game_mode_e game_mode;
 
+    // map
+    map_t map;
+
     // scene data
     color_t background_color;
-
-    // player data
-    entity_t mouse_ball;   
-    entity_t keybd_ball;   
-
-    // enemies data
-    entity_t enemy;
 };
 
