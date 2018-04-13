@@ -1,11 +1,11 @@
-all: lint compile run
+all: compile lint run
 
 lint:
-	cppcheck . --enable=warning,performance,portability --error-exitcode=5
+	cppcheck . --enable=warning,performance,portability
 
 compile:
 	mkdir -p build
-	g++ main.cpp -O2 -o build/main.exe -lSDL2 -lSDL2_ttf -lSDL2_image -lm -Wall -Wextra -pedantic -std=c++11
+	g++ src/main.cpp -O2 -o build/main.exe -lSDL2 -lSDL2_ttf -lSDL2_image -lm -Wall -Wextra -pedantic -std=c++11
 
 clean:
 	rm -rf build

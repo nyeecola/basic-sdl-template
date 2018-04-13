@@ -13,16 +13,14 @@ void create_texture_for_glyphs(int index) {
     white.a = 255;
 
     SDL_Surface *surface = 0;
-    if (!(surface = TTF_RenderText_Solid(global_debug_font, str, white)))
-    {
+    if (!(surface = TTF_RenderText_Solid(global_debug_font, str, white))) {
         puts("Failed to create surface from text.");
         printf("Error: %s\n", TTF_GetError());
         return;
     }
 
     SDL_Texture *texture = 0;
-    if (!(texture = SDL_CreateTextureFromSurface(global_debug_renderer, surface)))
-    {
+    if (!(texture = SDL_CreateTextureFromSurface(global_debug_renderer, surface))) {
         puts("Failed to create texture from surface.");
         printf("Error: %s\n", TTF_GetError());
         return;
@@ -43,24 +41,20 @@ void debug_initialize_text(SDL_Renderer *renderer) {
         return;
     }
 
-    if (!(global_debug_font = TTF_OpenFont(FONT_PATH, FONT_SIZE)))
-    {
+    if (!(global_debug_font = TTF_OpenFont(FONT_PATH, FONT_SIZE))) {
         puts("Failed to open font file.");
         printf("Error: %s\n", TTF_GetError());
         return;
     }
 
     // create a texture for each glyph
-    for (int i = 0; i < 10; i++)
-    {
+    for (int i = 0; i < 10; i++) {
         create_texture_for_glyphs('0' + i);
     }
-    for (int i = 0; i < 26; i++)
-    {
+    for (int i = 0; i < 26; i++) {
         create_texture_for_glyphs('a' + i);
     }
-    for (int i = 0; i < 26; i++)
-    {
+    for (int i = 0; i < 26; i++) {
         create_texture_for_glyphs('A' + i);
     }
     create_texture_for_glyphs(' ');
@@ -97,13 +91,11 @@ void debug_initialize_text(SDL_Renderer *renderer) {
 // FONT_SIZE is multiplied by the scale.
 void debug_draw_text(const char *str, int x, int y, float scale) {
     int len = strlen(str);
-    for (int i = 0; i < len; i++)
-    {
+    for (int i = 0; i < len; i++) {
         SDL_Texture *glyph = global_glyphs[(int) str[i]];
         SDL_Rect rect;
 
-        if(SDL_QueryTexture(glyph, 0, 0, &rect.w, &rect.h) < 0)
-        {
+        if(SDL_QueryTexture(glyph, 0, 0, &rect.w, &rect.h) < 0) {
             printf("Error: %s\n", SDL_GetError());
             return;
         }
@@ -113,8 +105,7 @@ void debug_draw_text(const char *str, int x, int y, float scale) {
         rect.x = x + rect.w * i;
         rect.y = y;
 
-        if(SDL_RenderCopy(global_debug_renderer, glyph, 0, &rect) < 0)
-        {
+        if(SDL_RenderCopy(global_debug_renderer, glyph, 0, &rect) < 0) {
             printf("Error: %s\n", SDL_GetError());
             return;
         }
@@ -124,14 +115,14 @@ void debug_draw_text(const char *str, int x, int y, float scale) {
 // Draws the average fps on the screen
 // NOTE: this function must be called exactly once every frame in order to give
 //       correct results
+// TODO: check FPS, is probably wrong
 void debug_draw_fps(double dt) {
     static double timer = 0;
     static int counter = 0;
     static char fps_text[15] = "";
     timer += dt;
     counter++;
-    if (timer > 80) 
-    {
+    if (timer > 80) {
         snprintf(&fps_text[0], 15, "FPS: %.00f", 1 / (timer / (1000 * counter)));
         timer = 0;
         counter = 0;
