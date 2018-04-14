@@ -47,7 +47,7 @@ struct color_t {
 
 // entity types
 enum entity_type_e {
-    
+    PLAYER,
 };
 
 enum game_mode_e {
@@ -67,8 +67,8 @@ struct entity_t {
     double speed;
 
     SDL_Texture *image;
-    int w;
-    int h;
+    int image_w;
+    int image_h;
 
     entity_type_e type;
     union {
@@ -97,6 +97,9 @@ struct game_state_t {
 
     // map
     map_t map;
+
+    // player
+    entity_t player;
 
     // scene data
     color_t background_color;

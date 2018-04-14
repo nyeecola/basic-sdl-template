@@ -12,7 +12,7 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->background_color.b = 127;
     game_state->background_color.a = 255;
 
-    // initialize map grid (currently only for testing)
+    // initialize map (currently only for testing)
     game_state->map.w = 40;
     game_state->map.h = 30;
     for (int i = 0; i < game_state->map.w; i++) {
@@ -29,6 +29,16 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->map.floor_sprite = IMG_LoadTexture(renderer, FLOOR_IMG_PATH);
     assert(game_state->map.floor_sprite);
 
+    // initialize player data
+    game_state->player.pos = V2(50, 50);
+    game_state->player.speed = 150;
+    game_state->player.image = IMG_LoadTexture(renderer, BALL_IMG_PATH);
+    //SDL_QueryTexture(game_state->player.image, 0, 0,
+                     //&game_state->player.image_w, &game_state->player.image_h);
+    game_state->player.image_w = 36;
+    game_state->player.image_h = 36;
+    game_state->player.type = PLAYER;
+
     return game_state;
 }
 
@@ -37,16 +47,30 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
     assert(input);
     assert(dt >= 0);
 
+    // fps counter
+    //printf("dt: %lf\n", dt);
+
+    entity_t *player = &game_state->player; 
     switch(game_state->game_mode) {
         case PLAYING:
-            // keyboard ball movement
-            if (input->keys_pressed[SDL_SCANCODE_UP]) {
-            }
-            if (input->keys_pressed[SDL_SCANCODE_DOWN]) {
-            }
-            if (input->keys_pressed[SDL_SCANCODE_LEFT]) {
-            }
-            if (input->keys_pressed[SDL_SCANCODE_RIGHT]) {
+            {
+                // keyboard ball movement
+                v2 velocity = V2(0,0);
+                if (input->keys_pressed[SDL_SCANCODE_UP]) {
+                    velocity += V2(0,-1);
+                }
+                if (input->keys_pressed[SDL_SCANCODE_DOWN]) {
+                    velocity += V2(0,1);
+                }
+                if (input->keys_pressed[SDL_SCANCODE_LEFT]) {
+                    velocity += V2(-1,0);
+                }
+                if (input->keys_pressed[SDL_SCANCODE_RIGHT]) {
+                    velocity += V2(1,0);
+                }
+                if (math_magnitude(velocity)) {
+                    player->pos += math_normalize(velocity) * player->speed * dt;
+                }
             }
             break;
         case PAUSED:
@@ -54,18 +78,6 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
         case START_SCREEN:
             break;
     }
-}
-
-// temporary
-void render_ball(SDL_Renderer *renderer, entity_t ball) {
-    assert(renderer);
-
-    SDL_Rect ball_rect;
-    ball_rect.x = round(ball.pos.x - (BALL_SCALE * ball.w) / 2);
-    ball_rect.y = round(ball.pos.y - (BALL_SCALE * ball.h) / 2);
-    ball_rect.w = round(BALL_SCALE * ball.w);
-    ball_rect.h = round(BALL_SCALE * ball.h);
-    SDL_RenderCopy(renderer, ball.image, 0, &ball_rect);
 }
 
 void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double dt) {
@@ -97,6 +109,17 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                             break;
                     }
                 }
+            }
+
+            // draw player
+            {
+                entity_t player = game_state->player;
+                SDL_Rect rect;
+                rect.x = player.pos.x;
+                rect.y = player.pos.y;
+                rect.w = player.image_w;
+                rect.h = player.image_h;
+                SDL_RenderCopy(renderer, player.image, 0, &rect);
             }
             break;
         case PAUSED:

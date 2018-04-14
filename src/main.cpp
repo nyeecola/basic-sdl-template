@@ -113,14 +113,14 @@ int main(int, char *[]) {
         last_counter = current_counter;
         current_counter = SDL_GetPerformanceCounter();
         // TODO: handle overflow
-        delta_time = (double) (((current_counter - last_counter) * 1000) / SDL_GetPerformanceFrequency());
+        delta_time =  (/*(*/((double)current_counter - last_counter)/* * 1000)*/ / SDL_GetPerformanceFrequency());
 
         // update world for this frame
         game_state_update(game_state, input, delta_time);
 
         // render frame
         game_state_render(game_state, renderer, delta_time);
-        debug_draw_fps(delta_time);
+        debug_draw_fps(delta_time * 1000);
         SDL_RenderPresent(renderer);
     }
 
