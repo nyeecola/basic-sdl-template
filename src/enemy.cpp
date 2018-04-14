@@ -1,11 +1,16 @@
 void enemy_goto(entity_t *enemy, v2 dest, double dt) {
     v2 dir = dest - enemy->pos;
 
-    if (math_magnitude(dir) > 0) {
-        dir = math_normalize(dir);
+    double mag = math_magnitude(dir);
+    if (mag == 0) {
+        return;
+    }
+    if (mag < 1) {
+        enemy->pos = dest;
+        return;
     }
 
-    dir *= enemy->speed*dt;
+    dir = math_normalize(dir) * (enemy->speed*dt);
 
     enemy->pos += dir;
 }
