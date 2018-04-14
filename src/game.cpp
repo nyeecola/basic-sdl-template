@@ -59,7 +59,7 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
 
     fclose(arq);
 
-       for(int a=0 ; a < maps ; a++) {
+    for(int a=0 ; a < maps ; a++) {
         map[a].wall_sprite = IMG_LoadTexture(renderer, WALL_IMG_PATH);
         assert(map[a].wall_sprite);
         map[a].floor_sprite = IMG_LoadTexture(renderer, FLOOR_IMG_PATH);
@@ -96,7 +96,7 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->current_map_id = 0;
 
     load_maps(game_state->map, renderer);
-    create_wall_lines(game_state->map); // map static hitbox
+    create_wall_lines(&game_state->map[0]); // map static hitbox
 
     // initialize enemy
     game_state->enemies_count = 1;
@@ -110,6 +110,7 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->enemies[0].enemy_data.possibleDestinations[1] = V2(500,100);
     game_state->enemies[0].enemy_data.possibleDestinations[2] = V2(200,500);
     game_state->enemies[0].enemy_data.possibleDestinations_len = 3;
+    game_state->enemies[0].enemy_data.path = NULL;
     enemy_set_destination(game_state->map, &game_state->enemies[0], V2(200,200));
 
     // initialize player data
@@ -119,8 +120,8 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->player.image2 = IMG_LoadTexture(renderer, CAT_PASSWORD_IMG_PATH);
     //SDL_QueryTexture(game_state->player.image, 0, 0,
                      //&game_state->player.image_w, &game_state->player.image_h);
-    game_state->player.image_w = 30;
-    game_state->player.image_h = 30;
+    game_state->player.image_w = 18;
+    game_state->player.image_h = 18;
     game_state->player.type = PLAYER;
     game_state->player.hitbox_r = game_state->player.image_w/2;
     game_state->player.player_data.has_password = false;
@@ -159,6 +160,7 @@ void handle_doors(game_state_t *game_state) {
                 game_state->current_map_id = map.door[i].target_map;
                 int d = map.door[i].target_door;
                 map = game_state->map[game_state->current_map_id];
+                create_wall_lines(&game_state->map[game_state->current_map_id]);
                 door_t door = map.door[d];
 
                 game_state->player.pos.x = door.exit_x * TILE_SIZE + TILE_SIZE/2;
@@ -222,6 +224,7 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                         map_t *map = &(game_state->map[game_state->current_map_id]);
                         if ( map->tile[y][x] == LOCK ) {
                             map->tile[y][x] = EMPTY;
+                            create_wall_lines(map);
                             game_state->player.player_data.has_password = false;
                             SDL_Texture *aux = game_state->player.image;        
                             game_state->player.image = game_state->player.image2;       
@@ -335,6 +338,21 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                 entity_t e[128];
                 memcpy(&e, &game_state->enemies, sizeof(e));
                 for (int i = 0; i < e_c; i++) {
+                    // draw laser
+                    {
+                        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 1);
+                        v2 v;
+                        if (math_magnitude(e[i].pos - e[i].previous_pos) <= 0.001) {
+                            v = V2(1, 0);
+                        } else {
+                            v = math_normalize(e[i].pos - e[i].previous_pos);
+                        }
+                        v2 t;
+                        collides_with_walls(e[i].pos, e[i].pos + v*800, game_state->map[game_state->current_map_id], &t);
+                        //SDL_RenderDrawLine(renderer, e[i].pos.x, e[i].pos.y, t.x, t.y);
+                        thickLineRGBA(renderer, e[i].pos.x, e[i].pos.y, t.x, t.y, 5, 255, 0, 0, 255);
+                    }
+
                     SDL_Rect rect;
                     rect.x = e[i].pos.x - e[i].image_w/2;
                     rect.y = e[i].pos.y - e[i].image_h/2;
@@ -359,7 +377,7 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
 #if 1
             // debug draw lines
             {
-                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 1);
+                SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
                 for (int i = 0; i < game_state->map[game_state->current_map_id].hitbox_size; i++) {
                     seg_t line = game_state->map[game_state->current_map_id].hitbox[i];
                     SDL_RenderDrawLine(renderer, line.a.x, line.a.y, line.b.x, line.b.y);

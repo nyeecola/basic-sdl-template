@@ -1,4 +1,6 @@
 void create_wall_lines(map_t *map) {
+    assert(map);
+
     map->hitbox = (seg_t *) malloc(5000 * sizeof(seg_t));
     map->hitbox_size = 0;
     bool idle = true;
@@ -214,6 +216,54 @@ bool rect_intersects_circle(v2 p, double r, v2 a, v2 b, v2 c, v2 d) {
 bool collides_with_walls(v2 pos, double r, map_t map) {
     for (int i = 0; i < map.hitbox_size; i++) {
         if (seg_intersects_circle(pos, r, map.hitbox[i].a, map.hitbox[i].b)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+// TODO: check if it breaks for two vertical lines and similar cases
+// Returns 1 if the lines intersect, otherwise 0. In addition, if the lines
+// intersect the intersection point may be stored in the floats i_x and i_y.
+char get_line_intersection(float p0_x, float p0_y, float p1_x, float p1_y,
+    float p2_x, float p2_y, float p3_x, float p3_y, double *i_x, double *i_y)
+{
+    float s1_x, s1_y, s2_x, s2_y;
+    s1_x = p1_x - p0_x;     s1_y = p1_y - p0_y;
+    s2_x = p3_x - p2_x;     s2_y = p3_y - p2_y;
+
+    float s, t;
+    s = (-s1_y * (p0_x - p2_x) + s1_x * (p0_y - p2_y)) / (-s2_x * s1_y + s1_x * s2_y);
+    t = ( s2_x * (p0_y - p2_y) - s2_y * (p0_x - p2_x)) / (-s2_x * s1_y + s1_x * s2_y);
+
+    if (s >= 0 && s <= 1 && t >= 0 && t <= 1)
+    {
+        // Collision detected
+        if (i_x != NULL)
+            *i_x = p0_x + (t * s1_x);
+        if (i_y != NULL)
+            *i_y = p0_y + (t * s1_y);
+        return 1;
+    }
+
+    return 0; // No collision
+}
+
+bool collides_with_walls(v2 a, v2 b, map_t map, v2 *min_p) {
+    double min_dist = -1;
+    for (int i = 0; i < map.hitbox_size; i++) {
+        v2 ip;
+        char intersects = get_line_intersection(a.x, a.y, b.x, b.y,
+                                                map.hitbox[i].a.x, map.hitbox[i].a.y,
+                                                map.hitbox[i].b.x, map.hitbox[i].b.y, &ip.x, &ip.y);
+        if (intersects) {
+            double mag = math_magnitude(ip-a);
+            if (mag < min_dist || min_dist == -1) {
+                min_dist = mag;
+                min_p->x = ip.x;
+                min_p->y = ip.y;
+            }
             return true;
         }
     }
