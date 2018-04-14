@@ -27,6 +27,7 @@ inline double math_magnitude(v3 vector) {
 
 inline v2 math_normalize(v2 vector) {
     double magnitude = math_magnitude(vector);
+    assert(magnitude);
 
     vector.x /= magnitude;
     vector.y /= magnitude;
