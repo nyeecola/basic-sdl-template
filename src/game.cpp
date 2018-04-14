@@ -83,7 +83,7 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     // initialize enemy
     game_state->enemies_count = 1;
     game_state->enemies[0].pos = V2(20,20);
-    game_state->enemies[0].speed = 50;
+    game_state->enemies[0].speed = 150;
     game_state->enemies[0].image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
     game_state->enemies[0].image_w = 36;
     game_state->enemies[0].image_h = 36;
@@ -237,6 +237,12 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                     if (!collides_with_walls(next_pos_h + player->pos, player->hitbox_r, game_state->map[game_state->current_map_id])) {
                         player->pos += next_pos_h;
                     }
+
+                    v2 v = player->pos - player->previous_pos;
+                    if (math_magnitude(v)) {
+                        player->angle = atan2(v.y, v.x);
+                        player->angle *= 180/M_PI;
+                    }
                 }
             }
             handle_doors(game_state);
@@ -308,12 +314,7 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                 rect.w = player.image_w;
                 rect.h = player.image_h;
 
-                v2 v = player.pos - player.previous_pos;
-                if (math_magnitude(v)) {
-                    double angle = atan2(v.y, v.x);
-                    angle *= 180/M_PI;
-                    SDL_RenderCopyEx(renderer, player.image, 0, &rect, angle, NULL, SDL_FLIP_NONE);
-                }
+                SDL_RenderCopyEx(renderer, player.image, 0, &rect, player.angle, NULL, SDL_FLIP_NONE);
             }
             break;
         case PAUSED:

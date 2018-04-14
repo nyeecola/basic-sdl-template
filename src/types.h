@@ -67,6 +67,7 @@ struct entity_t {
     v2 previous_pos; // used to calculate rotation
     v2 pos;
     double speed;
+    double angle;
 
     SDL_Texture *image;
     int image_w;
