@@ -101,14 +101,13 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->player.image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
     //SDL_QueryTexture(game_state->player.image, 0, 0,
                      //&game_state->player.image_w, &game_state->player.image_h);
-    game_state->player.image_w = 18;
-    game_state->player.image_h = 18;
+    game_state->player.image_w = 30;
+    game_state->player.image_h = 30;
     game_state->player.type = PLAYER;
     game_state->player.hitbox_r = game_state->player.image_w/2;
 
     return game_state;
 }
-
 
 v2 entity_tile_pos(entity_t entity) {
     int x, y;
@@ -227,6 +226,7 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                     velocity += V2(1,0);
                 }
                 if (math_magnitude(velocity)) {
+                    player->previous_pos = player->pos;
                     velocity = math_normalize(velocity) * player->speed * dt;
                     v2 next_pos_h = V2(velocity.x, 0);
                     v2 next_pos_v = V2(0, velocity.y);
@@ -306,7 +306,11 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                 rect.y = player.pos.y - player.image_h/2;
                 rect.w = player.image_w;
                 rect.h = player.image_h;
-                SDL_RenderCopy(renderer, player.image, 0, &rect);
+
+                v2 v = player.pos - player.previous_pos;
+                double angle = atan2(v.y, v.x);
+                angle *= 180/M_PI;
+                SDL_RenderCopyEx(renderer, player.image, 0, &rect, angle, NULL, SDL_FLIP_NONE);
             }
             break;
         case PAUSED:
