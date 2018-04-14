@@ -17,3 +17,6 @@ const char * const FLOOR_IMG_PATH = "assets/floor_cell.png";
 const float BALL_SPEED = 0.8;
 const float BALL_SCALE = 0.1;
 
+// map
+const int MAX_DOOR_PER_ROOM = 10;
+const int MAX_MAPS_PER_RUN = 20;

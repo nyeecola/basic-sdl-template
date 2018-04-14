@@ -13,8 +13,8 @@
 // Local includes
 // ---------------------
 
-#include "types.h"
 #include "constants.h"
+#include "types.h"
 
 #include "math.cpp"
 #include "debug.cpp"

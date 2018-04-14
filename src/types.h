@@ -80,10 +80,22 @@ struct entity_t {
 enum tile_type_e {
     EMPTY,
     WALL,
+    DOOR
+};
+
+struct door_t {
+    int x;
+    int y;
+    int target_map;
+    int target_door;
 };
 
 struct map_t {
     int w, h;
+    int tile_size;
+    int doors;
+
+    door_t door[MAX_DOOR_PER_ROOM];
     tile_type_e tile[30][40];
 
     SDL_Texture *wall_sprite;
@@ -96,7 +108,8 @@ struct game_state_t {
     game_mode_e game_mode;
 
     // map
-    map_t map;
+    int current_map_id;
+    map_t *map;
 
     // scene data
     color_t background_color;
