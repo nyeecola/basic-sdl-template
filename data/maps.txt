@@ -1,0 +1,70 @@
+2
+
+40 30 2
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                   OOOOOOOOOOOOOOOOOOOO
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+39 7  38  7  1  0
+39 25 38 25  1  1
+
+
+40 30 2
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                                      O
+O                 OOOOOOOOOOOOOOOOOOOOOO
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+30 29 30 28 0 0
+15 29 15 28 0 1

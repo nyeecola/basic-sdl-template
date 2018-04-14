@@ -1,3 +1,71 @@
+void load_maps(map_t *map, SDL_Renderer *renderer) {
+
+    FILE *arq = fopen(MAPS_SOURCE_PATH, "r");
+
+    int maps;
+    char current;
+
+    fscanf(arq, "%d", &maps);
+    assert(maps <= MAX_MAPS_PER_RUN);
+
+    for(int m=0 ; m < maps ; m++) {
+        fscanf(arq, "%d %d %d", &map[m].w, &map[m].h, &map[m].doors);
+        do {
+            fscanf(arq, "%c", &current);
+        } while ( current != '\n');
+        assert(map[m].w <= 40);
+        assert(map[m].h <= 30);
+        assert(map[m].doors <= MAX_DOOR_PER_ROOM);
+        for(int y=0 ; y < map[m].h ; y++) {
+            for(int x=0 ; x < map[m].w ; x++) {
+                fscanf(arq, "%c", &current);
+                switch(current) {
+                    case ' ': {
+                        map[m].tile[y][x] = EMPTY;
+                        break;
+                    }
+                    case 'O': {
+                        map[m].tile[y][x] = WALL;
+                        break;
+                    }
+                    default: {
+                        printf("%d\n", (int) current);
+                        assert(false);
+                        break;
+                    }
+                }
+            }
+            do {
+                fscanf(arq, "%c", &current);
+            } while ( current != '\n');
+        }
+
+        for(int i=0 ; i < map[m].doors ; i++) {
+            fscanf(arq, "%d %d", &map[m].door[i].x, &map[m].door[i].y);
+            fscanf(arq, "%d %d", &map[m].door[i].exit_x, &map[m].door[i].exit_y);
+            fscanf(arq, "%d %d", &map[m].door[i].target_map, &map[m].door[i].target_door);
+            map[m].tile[map[m].door[i].y][map[m].door[i].x] = DOOR;
+        }
+    }
+
+    fclose(arq);
+
+    map[0].door_sprite = IMG_LoadTexture(renderer, DOOR_IMG_PATH);
+    assert(map[0].door_sprite);
+    map[0].wall_sprite = IMG_LoadTexture(renderer, WALL_IMG_PATH);
+    assert(map[0].wall_sprite);
+    map[0].floor_sprite = IMG_LoadTexture(renderer, FLOOR_IMG_PATH);
+    assert(map[0].floor_sprite);
+
+    map[1].door_sprite = IMG_LoadTexture(renderer, DOOR_IMG_PATH);
+    assert(map[1].door_sprite);
+    map[1].wall_sprite = IMG_LoadTexture(renderer, WALL_IMG_PATH);
+    assert(map[1].wall_sprite);
+    map[1].floor_sprite = IMG_LoadTexture(renderer, FLOOR_IMG_PATH);
+    assert(map[1].floor_sprite);
+}
+
+
 game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     assert(renderer);
 
@@ -16,55 +84,21 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->enemies_count = 1;
     game_state->enemies[0].pos = V2(20,20);
     game_state->enemies[0].speed = 50;
-    game_state->enemies[0].image = IMG_LoadTexture(renderer, BALL_IMG_PATH);
+    game_state->enemies[0].image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
     game_state->enemies[0].image_w = 36;
     game_state->enemies[0].image_h = 36;
     game_state->enemies[0].type = ENEMY;
 
     // initialize map (currently only for testing)
     game_state->map = (map_t*) malloc(sizeof(*(game_state->map)) * MAX_DOOR_PER_ROOM);
-    game_state->map[0].w = 40;
-    game_state->map[0].h = 30;
-
-    for (int j = 0; j < game_state->map[0].h; j++) {
-        for (int i = 0; i < game_state->map[0].w; i++) {
-            if (!i || !j || i == game_state->map[0].w-1 || j == game_state->map[0].h-1) {
-                if ( (i == 0 && j == 20) || (i == 30 && j == game_state->map[0].h-1) ) {
-                    game_state->map[0].tile[j][i] = DOOR;
-                } else {
-                    game_state->map[0].tile[j][i] = WALL;
-                }
-            } else{
-                game_state->map[0].tile[j][i] = EMPTY;
-            }
-        }
-    }
-    game_state->map[0].doors = 2;
-    game_state->map[0].door[0].x = 0;
-    game_state->map[0].door[0].y = 20;
-    game_state->map[0].door[0].target_map = 0;
-    game_state->map[0].door[0].target_door = 1;
-    game_state->map[0].door[0].exit_x = 1;
-    game_state->map[0].door[0].exit_y = 20;
-
-    game_state->map[0].door[1].x = 30;
-    game_state->map[0].door[1].y = game_state->map[0].h-1;
-    game_state->map[0].door[1].target_map = 0;
-    game_state->map[0].door[1].target_door = 0;
-    game_state->map[0].door[1].exit_x = 30;
-    game_state->map[0].door[1].exit_y = game_state->map[0].h-2;
-
-
     game_state->current_map_id = 0;
-    game_state->map[game_state->current_map_id].wall_sprite = IMG_LoadTexture(renderer, WALL_IMG_PATH);
-    assert(game_state->map[game_state->current_map_id].wall_sprite);
-    game_state->map[game_state->current_map_id].floor_sprite = IMG_LoadTexture(renderer, FLOOR_IMG_PATH);
-    assert(game_state->map[game_state->current_map_id].floor_sprite);
+
+    load_maps(game_state->map, renderer);
 
     // initialize player data
     game_state->player.pos = V2(50, 50);
     game_state->player.speed = 150;
-    game_state->player.image = IMG_LoadTexture(renderer, BALL_IMG_PATH);
+    game_state->player.image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
     //SDL_QueryTexture(game_state->player.image, 0, 0,
                      //&game_state->player.image_w, &game_state->player.image_h);
     game_state->player.image_w = 36;
@@ -180,7 +214,7 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                             SDL_RenderCopy(renderer, m.wall_sprite, 0, &rect);
                             break;
                         case DOOR:
-                            SDL_RenderCopy(renderer, m.floor_sprite, 0, &rect);
+                            SDL_RenderCopy(renderer, m.door_sprite, 0, &rect);
                             break;
                         default:
                             assert(false);
