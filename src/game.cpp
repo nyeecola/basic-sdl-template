@@ -34,6 +34,8 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
                 } else {
                     game_state->map[0].tile[j][i] = WALL;
                 }
+            } else{
+                game_state->map[0].tile[j][i] = EMPTY;
             }
         }
     }
