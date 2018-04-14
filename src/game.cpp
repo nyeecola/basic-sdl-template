@@ -115,8 +115,8 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
             {
                 entity_t player = game_state->player;
                 SDL_Rect rect;
-                rect.x = player.pos.x;
-                rect.y = player.pos.y;
+                rect.x = player.pos.x - player.image_w/2;
+                rect.y = player.pos.y - player.image_h/2;
                 rect.w = player.image_w;
                 rect.h = player.image_h;
                 SDL_RenderCopy(renderer, player.image, 0, &rect);
