@@ -27,6 +27,7 @@ inline double math_magnitude(v3 vector) {
 
 inline v2 math_normalize(v2 vector) {
     double magnitude = math_magnitude(vector);
+    assert(magnitude);
 
     vector.x /= magnitude;
     vector.y /= magnitude;
@@ -100,6 +101,13 @@ inline v3 & operator+=(v3 &a, v3 b) {
 
 inline v2 operator*(v2 a, double b) {
     return V2(a.x * b, a.y * b);
+}
+
+inline v2 & operator*=(v2 &a, double b) {
+    a.x *= b;
+    a.y *= b;
+
+    return a;
 }
 
 inline v3 operator*(v3 a, double b) {
