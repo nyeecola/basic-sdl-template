@@ -25,6 +25,7 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->map = (map_t*) malloc(sizeof(*(game_state->map)) * MAX_DOOR_PER_ROOM);
     game_state->map[0].w = 40;
     game_state->map[0].h = 30;
+    game_state->map[0].tile_size = 20;
     for (int i = 0; i < game_state->map[0].w; i++) {
         for (int j = 0; j < game_state->map[0].h; j++) {
             if (!i || !j || i == game_state->map[0].w-1 || j == game_state->map[0].h-1) {
@@ -85,6 +86,7 @@ void handle_doors(game_state_t *game_state) {
 
     x = (int) pos.x;
     y = (int) pos.y;
+
     assert(x >= 0);
     assert(y >= 0);
     assert(x < map.w);
