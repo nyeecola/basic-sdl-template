@@ -85,6 +85,8 @@ enum tile_type_e {
 };
 
 struct door_t {
+    int exit_x;
+    int exit_y;
     int x;
     int y;
     int target_map;
@@ -93,7 +95,6 @@ struct door_t {
 
 struct map_t {
     int w, h;
-    int tile_size;
     int doors;
 
     door_t door[MAX_DOOR_PER_ROOM];

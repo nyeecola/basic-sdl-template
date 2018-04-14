@@ -25,7 +25,6 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->map = (map_t*) malloc(sizeof(*(game_state->map)) * MAX_DOOR_PER_ROOM);
     game_state->map[0].w = 40;
     game_state->map[0].h = 30;
-    game_state->map[0].tile_size = 20;
     for (int i = 0; i < game_state->map[0].w; i++) {
         for (int j = 0; j < game_state->map[0].h; j++) {
             if (!i || !j || i == game_state->map[0].w-1 || j == game_state->map[0].h-1) {
@@ -44,10 +43,15 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->map[0].door[0].y = 20;
     game_state->map[0].door[0].target_map = 0;
     game_state->map[0].door[0].target_door = 1;
+    game_state->map[0].door[0].exit_x = 1;
+    game_state->map[0].door[0].exit_y = 20;
+
     game_state->map[0].door[1].x = 30;
     game_state->map[0].door[1].y = game_state->map[0].h-1;
     game_state->map[0].door[1].target_map = 0;
     game_state->map[0].door[1].target_door = 0;
+    game_state->map[0].door[1].exit_x = 30;
+    game_state->map[0].door[1].exit_y = game_state->map[0].h-2;
 
 
     game_state->current_map_id = 0;
@@ -70,11 +74,11 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
 }
 
 
-v2 entity_tile_pos(entity_t entity, map_t map) {
+v2 entity_tile_pos(entity_t entity) {
     int x, y;
 
-    x = (int) entity.pos.x / map.tile_size;
-    y = (int) entity.pos.y / map.tile_size;
+    x = (int) entity.pos.x / TILE_SIZE;
+    y = (int) entity.pos.y / TILE_SIZE;
 
     return V2((double)x,(double)y);
 }
@@ -84,7 +88,7 @@ void handle_doors(game_state_t *game_state) {
 
     map_t map = game_state->map[game_state->current_map_id];
 
-    v2 pos = entity_tile_pos(game_state->player, map);
+    v2 pos = entity_tile_pos(game_state->player);
 
     x = (int) pos.x;
     y = (int) pos.y;
@@ -99,13 +103,12 @@ void handle_doors(game_state_t *game_state) {
         for(int i=0 ; i < map.doors ; i++) {
             if ( map.door[i].x == x && map.door[i].y == y ) {
                 game_state->current_map_id = map.door[i].target_map;
+                int d = map.door[i].target_door;
                 map = game_state->map[game_state->current_map_id];
-                for(int j=0 ; j < map.doors ; j++) {
-                    if ( map.door[i].x == x && map.door[i].y == y ) {
-                        // Player teleport;
-                        printf("Entrou\n");
-                    }
-                }
+                door_t door = map.door[d];
+
+                game_state->player.pos.x = door.exit_x * TILE_SIZE + TILE_SIZE/2;
+                game_state->player.pos.y = door.exit_y * TILE_SIZE + TILE_SIZE/2;
             }
         }
     }

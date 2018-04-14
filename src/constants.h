@@ -20,3 +20,4 @@ const float BALL_SCALE = 0.1;
 // map
 const int MAX_DOOR_PER_ROOM = 10;
 const int MAX_MAPS_PER_RUN = 20;
+const int TILE_SIZE = 20;
