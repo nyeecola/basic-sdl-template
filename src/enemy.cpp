@@ -138,4 +138,3 @@ void enemy_move(map_t *map, entity_t *enemy, double dt) {
 
     enemy->pos += dir;
 }
-

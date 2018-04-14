@@ -220,4 +220,3 @@ bool collides_with_walls(v2 pos, double r, map_t map) {
 
     return false;
 }
-

@@ -84,6 +84,7 @@ struct entity_t {
     double angle;
 
     SDL_Texture *image;
+    SDL_Texture *image2;
     int image_w;
     int image_h;
 
@@ -125,7 +126,11 @@ struct map_t {
 
     SDL_Texture *wall_sprite;
     SDL_Texture *floor_sprite;
-    SDL_Texture *door_sprite;
+    SDL_Texture *doorw_sprite;
+    SDL_Texture *doorh_sprite;
+    SDL_Texture *lockw_sprite;
+    SDL_Texture *lockh_sprite;
+    SDL_Texture *password_sprite;
 };
 
 // game state data
@@ -147,4 +152,3 @@ struct game_state_t {
     // scene data
     color_t background_color;
 };
-

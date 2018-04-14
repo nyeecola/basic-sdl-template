@@ -59,19 +59,22 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
 
     fclose(arq);
 
-    map[0].door_sprite = IMG_LoadTexture(renderer, DOOR_IMG_PATH);
-    assert(map[0].door_sprite);
-    map[0].wall_sprite = IMG_LoadTexture(renderer, WALL_IMG_PATH);
-    assert(map[0].wall_sprite);
-    map[0].floor_sprite = IMG_LoadTexture(renderer, FLOOR_IMG_PATH);
-    assert(map[0].floor_sprite);
-
-    map[1].door_sprite = IMG_LoadTexture(renderer, DOOR_IMG_PATH);
-    assert(map[1].door_sprite);
-    map[1].wall_sprite = IMG_LoadTexture(renderer, WALL_IMG_PATH);
-    assert(map[1].wall_sprite);
-    map[1].floor_sprite = IMG_LoadTexture(renderer, FLOOR_IMG_PATH);
-    assert(map[1].floor_sprite);
+       for(int a=0 ; a < maps ; a++) {
+        map[a].wall_sprite = IMG_LoadTexture(renderer, WALL_IMG_PATH);
+        assert(map[a].wall_sprite);
+        map[a].floor_sprite = IMG_LoadTexture(renderer, FLOOR_IMG_PATH);
+        assert(map[a].floor_sprite);
+        map[a].password_sprite = IMG_LoadTexture(renderer, PASSWORD_IMG_PATH);
+        assert(map[a].floor_sprite);
+        map[a].doorh_sprite = IMG_LoadTexture(renderer, DOORH_IMG_PATH);
+        assert(map[a].doorh_sprite);
+        map[a].lockh_sprite = IMG_LoadTexture(renderer, LOCKH_IMG_PATH);
+        assert(map[a].lockh_sprite);
+        map[a].doorw_sprite = IMG_LoadTexture(renderer, DOORW_IMG_PATH);
+        assert(map[a].doorw_sprite);
+        map[a].lockw_sprite = IMG_LoadTexture(renderer, LOCKW_IMG_PATH);
+        assert(map[a].lockw_sprite);
+    }
 }
 
 game_state_t *game_state_initialize(SDL_Renderer *renderer) {
@@ -113,6 +116,7 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->player.pos = V2(50, 50);
     game_state->player.speed = 150;
     game_state->player.image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
+    game_state->player.image2 = IMG_LoadTexture(renderer, CAT_PASSWORD_IMG_PATH);
     //SDL_QueryTexture(game_state->player.image, 0, 0,
                      //&game_state->player.image_w, &game_state->player.image_h);
     game_state->player.image_w = 30;
@@ -219,6 +223,9 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                         if ( map->tile[y][x] == LOCK ) {
                             map->tile[y][x] = EMPTY;
                             game_state->player.player_data.has_password = false;
+                            SDL_Texture *aux = game_state->player.image;        
+                            game_state->player.image = game_state->player.image2;       
+                            game_state->player.image2 = aux;
                         }
                     }
                 }
@@ -259,6 +266,9 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                 if ( map->tile[(int)tile_pos.y][(int)tile_pos.x] == PASSWORD && !game_state->player.player_data.has_password ) {
                     map->tile[(int)tile_pos.y][(int)tile_pos.x] = EMPTY;
                     game_state->player.player_data.has_password = true;
+                    SDL_Texture *aux = game_state->player.image;      
+                    game_state->player.image = game_state->player.image2;       
+                    game_state->player.image2 = aux;
 
                 }
                 handle_doors(game_state);
@@ -288,7 +298,7 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                     rect.y = 20 * j;
                     rect.w = 20;
                     rect.h = 20;
-                    switch(m.tile[j][i]) {
+                     switch(m.tile[j][i]) {
                         case EMPTY:
                             SDL_RenderCopy(renderer, m.floor_sprite, 0, &rect);
                             break;
@@ -296,13 +306,21 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                             SDL_RenderCopy(renderer, m.wall_sprite, 0, &rect);
                             break;
                         case DOOR:
-                            SDL_RenderCopy(renderer, m.door_sprite, 0, &rect);
+                            if ( i == 0 || i == 39 ) {
+                                SDL_RenderCopy(renderer, m.doorh_sprite, 0, &rect);
+                            } else {
+                                SDL_RenderCopy(renderer, m.doorw_sprite, 0, &rect); 
+                            }
                             break;
                         case PASSWORD:
-                            SDL_RenderCopy(renderer, m.door_sprite, 0, &rect);
+                            SDL_RenderCopy(renderer, m.password_sprite, 0, &rect);
                             break;
                         case LOCK:
-                            SDL_RenderCopy(renderer, m.wall_sprite, 0, &rect);
+                            if ( m.tile[j][i-1] == WALL ) {
+                                SDL_RenderCopy(renderer, m.lockh_sprite, 0, &rect);
+                            } else {
+                                SDL_RenderCopy(renderer, m.lockw_sprite, 0, &rect); 
+                            }
                             break;
                         default:
                             assert(false);
