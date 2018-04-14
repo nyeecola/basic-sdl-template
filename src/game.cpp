@@ -1,5 +1,4 @@
 void load_maps(map_t *map, SDL_Renderer *renderer) {
-
     FILE *arq = fopen(MAPS_SOURCE_PATH, "r");
 
     int maps;
@@ -65,7 +64,6 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
     assert(map[1].floor_sprite);
 }
 
-
 game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     assert(renderer);
 
@@ -95,6 +93,7 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->current_map_id = 0;
 
     load_maps(game_state->map, renderer);
+    create_wall_lines(game_state->map); // map static hitbox
 
     // initialize player data
     game_state->player.pos = V2(50, 50);
@@ -150,56 +149,6 @@ void handle_doors(game_state_t *game_state) {
     }
 }
 
-bool seg_intersects_circle(v2 c, double r, v2 a, v2 b) {
-    assert(abs(a.x - b.x) >= 0.0001 || abs(a.y - b.y) >= 0.0001);
-
-    v2 ab = math_normalize(b - a);
-    v2 ac = c - a;
-
-    double dp = ab * ac;
-
-    double mag_ab = math_magnitude(b - a);
-
-    v2 p;
-    if (dp >= 0 && dp <= mag_ab) { // between a and b
-        ab *= dp;
-        p = ab + a;
-    } else if (dp < 0) { // we have to check a
-        p = a;
-    } else { // we have to check b
-        p = b;
-    }
-
-    return (math_magnitude(c-p) <= r);
-}
-
-// NOTE: clockwise points
-bool rect_intersects_circle(v2 p, double r, v2 a, v2 b, v2 c, v2 d) {
-    return (seg_intersects_circle(p, r, a, b) ||
-            seg_intersects_circle(p, r, b, c) ||
-            seg_intersects_circle(p, r, c, d) ||
-            seg_intersects_circle(p, r, d, a));
-}
-
-bool collides_with_walls(v2 pos, double r, map_t map) {
-    for (int i = 0; i < map.h; i++) {
-        for (int j = 0; j < map.w; j++) {
-            if (map.tile[i][j] == WALL) {
-                v2 a, b, c, d;
-                a = V2(j * TILE_SIZE, i * TILE_SIZE);
-                b = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE);
-                c = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
-                d = V2(j * TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
-                if (rect_intersects_circle(pos, r, a, b, c, d)) {
-                    return true;
-                }
-            }
-        }
-    }
-
-    return false;
-}
-
 void game_state_update(game_state_t *game_state, input_t *input, double dt) {
     assert(game_state);
     assert(input);
@@ -231,10 +180,12 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                     velocity = math_normalize(velocity) * player->speed * dt;
                     v2 next_pos_h = V2(velocity.x, 0);
                     v2 next_pos_v = V2(0, velocity.y);
-                    if (!collides_with_walls(next_pos_v + player->pos, player->hitbox_r, game_state->map[game_state->current_map_id])) {
+                    if (!collides_with_walls(next_pos_v + player->pos, player->hitbox_r,
+                                             game_state->map[game_state->current_map_id])) {
                         player->pos += next_pos_v;
                     }
-                    if (!collides_with_walls(next_pos_h + player->pos, player->hitbox_r, game_state->map[game_state->current_map_id])) {
+                    if (!collides_with_walls(next_pos_h + player->pos, player->hitbox_r,
+                                             game_state->map[game_state->current_map_id])) {
                         player->pos += next_pos_h;
                     }
 
@@ -316,6 +267,18 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
 
                 SDL_RenderCopyEx(renderer, player.image, 0, &rect, player.angle, NULL, SDL_FLIP_NONE);
             }
+
+#if 1
+            // debug draw lines
+            {
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 1);
+                for (int i = 0; i < game_state->map[game_state->current_map_id].hitbox_size; i++) {
+                    seg_t line = game_state->map[game_state->current_map_id].hitbox[i];
+                    SDL_RenderDrawLine(renderer, line.a.x, line.a.y, line.b.x, line.b.y);
+                }
+            }
+#endif
+
             break;
         case PAUSED:
             // repaint background as black

@@ -19,6 +19,7 @@
 #include "math.cpp"
 #include "debug.cpp"
 #include "enemy.cpp"
+#include "physics.cpp"
 #include "game.cpp"
 
 // ---------------------

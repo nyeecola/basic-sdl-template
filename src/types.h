@@ -2,16 +2,21 @@
 // Math data
 // --------------------
 
-typedef struct {
+struct v2 {
     double x;
     double y;
-} v2;
+};
 
-typedef struct {
+struct v3 {
     double x;
     double y;
     double z;
-} v3;
+};
+
+struct seg_t{
+    v2 a;
+    v2 b;
+};
 
 // ---------------------
 // Input data
@@ -103,6 +108,8 @@ struct map_t {
 
     door_t door[MAX_DOOR_PER_ROOM];
     tile_type_e tile[30][40];
+    seg_t *hitbox; // all static line segments used for collision
+    int hitbox_size;
 
     SDL_Texture *wall_sprite;
     SDL_Texture *floor_sprite;
