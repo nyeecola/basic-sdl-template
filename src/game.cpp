@@ -25,8 +25,9 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->map = (map_t*) malloc(sizeof(*(game_state->map)) * MAX_DOOR_PER_ROOM);
     game_state->map[0].w = 40;
     game_state->map[0].h = 30;
-    for (int i = 0; i < game_state->map[0].w; i++) {
-        for (int j = 0; j < game_state->map[0].h; j++) {
+
+    for (int j = 0; j < game_state->map[0].h; j++) {
+        for (int i = 0; i < game_state->map[0].w; i++) {
             if (!i || !j || i == game_state->map[0].w-1 || j == game_state->map[0].h-1) {
                 if ( (i == 0 && j == 20) || (i == 30 && j == game_state->map[0].h-1) ) {
                     game_state->map[0].tile[j][i] = DOOR;
@@ -164,8 +165,8 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
             // repaint background
             SDL_RenderClear(renderer);
             memcpy(&m, &game_state->map[game_state->current_map_id], sizeof(m));
-            for (int i = 0; i < m.w; i++) {
-                for (int j = 0; j < m.h; j++) {
+            for (int j = 0; j < m.h; j++) {
+                for (int i = 0; i < m.w; i++) {
                     SDL_Rect rect;
                     rect.x = 20 * i;
                     rect.y = 20 * j;
