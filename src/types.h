@@ -2,16 +2,21 @@
 // Math data
 // --------------------
 
-typedef struct {
+struct v2 {
     double x;
     double y;
-} v2;
+};
 
-typedef struct {
+struct v3 {
     double x;
     double y;
     double z;
-} v3;
+};
+
+struct seg_t{
+    v2 a;
+    v2 b;
+};
 
 // ---------------------
 // Input data
@@ -67,6 +72,10 @@ struct enemy_t {
     int possibleDestinations_len;
 };
 
+struct player_t {
+    bool has_password;
+};
+
 // entity generic data 
 struct entity_t {
     v2 previous_pos; // used to calculate rotation
@@ -83,6 +92,7 @@ struct entity_t {
     entity_type_e type;
     union {
         enemy_t enemy_data; // this should be more specific than enemy (it is just an example)
+        player_t player_data;
         // ... other entities data (i.e. shopkeeper specific data)
     };
 };
@@ -90,7 +100,9 @@ struct entity_t {
 enum tile_type_e {
     EMPTY,
     WALL,
-    DOOR
+    DOOR,
+    LOCK,
+    PASSWORD
 };
 
 struct door_t {
@@ -108,6 +120,8 @@ struct map_t {
 
     door_t door[MAX_DOOR_PER_ROOM];
     tile_type_e tile[30][40];
+    seg_t *hitbox; // all static line segments used for collision
+    int hitbox_size;
 
     SDL_Texture *wall_sprite;
     SDL_Texture *floor_sprite;

@@ -1,24 +1,24 @@
 void load_maps(map_t *map, SDL_Renderer *renderer) {
-
     FILE *arq = fopen(MAPS_SOURCE_PATH, "r");
 
     int maps;
+    int trash;
     char current;
 
-    fscanf(arq, "%d", &maps);
+    trash = fscanf(arq, "%d", &maps);
     assert(maps <= MAX_MAPS_PER_RUN);
 
     for(int m=0 ; m < maps ; m++) {
-        fscanf(arq, "%d %d %d", &map[m].w, &map[m].h, &map[m].doors);
+        trash = fscanf(arq, "%d %d %d", &map[m].w, &map[m].h, &map[m].doors);
         do {
-            fscanf(arq, "%c", &current);
+            trash = fscanf(arq, "%c", &current);
         } while ( current != '\n');
         assert(map[m].w <= 40);
         assert(map[m].h <= 30);
         assert(map[m].doors <= MAX_DOOR_PER_ROOM);
         for(int y=0 ; y < map[m].h ; y++) {
             for(int x=0 ; x < map[m].w ; x++) {
-                fscanf(arq, "%c", &current);
+                trash = fscanf(arq, "%c", &current);
                 switch(current) {
                     case ' ': {
                         map[m].tile[y][x] = EMPTY;
@@ -26,6 +26,14 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
                     }
                     case 'O': {
                         map[m].tile[y][x] = WALL;
+                        break;
+                    }
+                    case 'L': {
+                        map[m].tile[y][x] = LOCK;
+                        break;
+                    }
+                    case 'P': {
+                        map[m].tile[y][x] = PASSWORD;
                         break;
                     }
                     default: {
@@ -36,17 +44,18 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
                 }
             }
             do {
-                fscanf(arq, "%c", &current);
+                trash = fscanf(arq, "%c", &current);
             } while ( current != '\n');
         }
 
         for(int i=0 ; i < map[m].doors ; i++) {
-            fscanf(arq, "%d %d", &map[m].door[i].x, &map[m].door[i].y);
-            fscanf(arq, "%d %d", &map[m].door[i].exit_x, &map[m].door[i].exit_y);
-            fscanf(arq, "%d %d", &map[m].door[i].target_map, &map[m].door[i].target_door);
+            trash = fscanf(arq, "%d %d", &map[m].door[i].x, &map[m].door[i].y);
+            trash = fscanf(arq, "%d %d", &map[m].door[i].exit_x, &map[m].door[i].exit_y);
+            trash = fscanf(arq, "%d %d", &map[m].door[i].target_map, &map[m].door[i].target_door);
             map[m].tile[map[m].door[i].y][map[m].door[i].x] = DOOR;
         }
     }
+    trash++;
 
     fclose(arq);
 
@@ -64,7 +73,6 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
     map[1].floor_sprite = IMG_LoadTexture(renderer, FLOOR_IMG_PATH);
     assert(map[1].floor_sprite);
 }
-
 
 game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     assert(renderer);
@@ -85,6 +93,7 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->current_map_id = 0;
 
     load_maps(game_state->map, renderer);
+    create_wall_lines(game_state->map); // map static hitbox
 
     // initialize enemy
     game_state->enemies_count = 1;
@@ -110,6 +119,7 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->player.image_h = 30;
     game_state->player.type = PLAYER;
     game_state->player.hitbox_r = game_state->player.image_w/2;
+    game_state->player.player_data.has_password = false;
 
     return game_state;
 }
@@ -154,55 +164,26 @@ void handle_doors(game_state_t *game_state) {
     }
 }
 
-bool seg_intersects_circle(v2 c, double r, v2 a, v2 b) {
-    assert(abs(a.x - b.x) >= 0.0001 || abs(a.y - b.y) >= 0.0001);
+void faced_tile(game_state_t *gamestate, int *x, int *y) {
+    int ang = (int) gamestate->player.angle;
+    v2 player_tile = entity_tile_pos(gamestate->player);
 
-    v2 ab = math_normalize(b - a);
-    v2 ac = c - a;
-
-    double dp = ab * ac;
-
-    double mag_ab = math_magnitude(b - a);
-
-    v2 p;
-    if (dp >= 0 && dp <= mag_ab) { // between a and b
-        ab *= dp;
-        p = ab + a;
-    } else if (dp < 0) { // we have to check a
-        p = a;
-    } else { // we have to check b
-        p = b;
+    if ( ang == 0 ) {
+        *x = (int)player_tile.x + 1;
+        *y = (int)player_tile.y;
+    } else if ( ang == 180 ) {
+        *x = (int)player_tile.x - 1;
+        *y = (int)player_tile.y;
+    } else if ( ang == -90 ) {
+        *x = (int)player_tile.x;
+        *y = (int)player_tile.y - 1;
+    } else {
+        *x = (int)player_tile.x;
+        *y = (int)player_tile.y + 1;
     }
-
-    return (math_magnitude(c-p) <= r);
 }
 
-// NOTE: clockwise points
-bool rect_intersects_circle(v2 p, double r, v2 a, v2 b, v2 c, v2 d) {
-    return (seg_intersects_circle(p, r, a, b) ||
-            seg_intersects_circle(p, r, b, c) ||
-            seg_intersects_circle(p, r, c, d) ||
-            seg_intersects_circle(p, r, d, a));
-}
 
-bool collides_with_walls(v2 pos, double r, map_t map) {
-    for (int i = 0; i < map.h; i++) {
-        for (int j = 0; j < map.w; j++) {
-            if (map.tile[i][j] == WALL) {
-                v2 a, b, c, d;
-                a = V2(j * TILE_SIZE, i * TILE_SIZE);
-                b = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE);
-                c = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
-                d = V2(j * TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
-                if (rect_intersects_circle(pos, r, a, b, c, d)) {
-                    return true;
-                }
-            }
-        }
-    }
-
-    return false;
-}
 
 void game_state_update(game_state_t *game_state, input_t *input, double dt) {
     assert(game_state);
@@ -218,27 +199,40 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
             {
                 // keyboard ball movement
                 v2 velocity = V2(0,0);
-                if (input->keys_pressed[SDL_SCANCODE_UP]) {
+                if (input->keys_pressed[SDL_SCANCODE_W]) {
                     velocity += V2(0,-1);
                 }
-                if (input->keys_pressed[SDL_SCANCODE_DOWN]) {
+                if (input->keys_pressed[SDL_SCANCODE_S]) {
                     velocity += V2(0,1);
                 }
-                if (input->keys_pressed[SDL_SCANCODE_LEFT]) {
+                if (input->keys_pressed[SDL_SCANCODE_A]) {
                     velocity += V2(-1,0);
                 }
-                if (input->keys_pressed[SDL_SCANCODE_RIGHT]) {
+                if (input->keys_pressed[SDL_SCANCODE_D]) {
                     velocity += V2(1,0);
+                }
+                if (input->keys_pressed[SDL_SCANCODE_E]) {
+                    if ( game_state->player.player_data.has_password ) {
+                        int x,y;
+                        faced_tile(game_state, &x, &y);
+                        map_t *map = &(game_state->map[game_state->current_map_id]);
+                        if ( map->tile[y][x] == LOCK ) {
+                            map->tile[y][x] = EMPTY;
+                            game_state->player.player_data.has_password = false;
+                        }
+                    }
                 }
                 if (math_magnitude(velocity)) {
                     player->previous_pos = player->pos;
                     velocity = math_normalize(velocity) * player->speed * dt;
                     v2 next_pos_h = V2(velocity.x, 0);
                     v2 next_pos_v = V2(0, velocity.y);
-                    if (!collides_with_walls(next_pos_v + player->pos, player->hitbox_r, game_state->map[game_state->current_map_id])) {
+                    if (!collides_with_walls(next_pos_v + player->pos, player->hitbox_r,
+                                             game_state->map[game_state->current_map_id])) {
                         player->pos += next_pos_v;
                     }
-                    if (!collides_with_walls(next_pos_h + player->pos, player->hitbox_r, game_state->map[game_state->current_map_id])) {
+                    if (!collides_with_walls(next_pos_h + player->pos, player->hitbox_r,
+                                             game_state->map[game_state->current_map_id])) {
                         player->pos += next_pos_h;
                     }
 
@@ -259,8 +253,16 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
 
                     enemy_move(game_state->map, &game_state->enemies[i], dt);
                 }
+
+                map_t *map = &(game_state->map[game_state->current_map_id]);
+                v2 tile_pos = entity_tile_pos(game_state->player);
+                if ( map->tile[(int)tile_pos.y][(int)tile_pos.x] == PASSWORD && !game_state->player.player_data.has_password ) {
+                    map->tile[(int)tile_pos.y][(int)tile_pos.x] = EMPTY;
+                    game_state->player.player_data.has_password = true;
+
+                }
+                handle_doors(game_state);
             }
-            handle_doors(game_state);
             break;
         case PAUSED:
             break;
@@ -296,6 +298,12 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                         case DOOR:
                             SDL_RenderCopy(renderer, m.door_sprite, 0, &rect);
                             break;
+                        case PASSWORD:
+                            SDL_RenderCopy(renderer, m.door_sprite, 0, &rect);
+                            break;
+                        case LOCK:
+                            SDL_RenderCopy(renderer, m.wall_sprite, 0, &rect);
+                            break;
                         default:
                             assert(false);
                             break;
@@ -329,6 +337,18 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
 
                 SDL_RenderCopyEx(renderer, player.image, 0, &rect, player.angle, NULL, SDL_FLIP_NONE);
             }
+
+#if 1
+            // debug draw lines
+            {
+                SDL_SetRenderDrawColor(renderer, 255, 0, 0, 1);
+                for (int i = 0; i < game_state->map[game_state->current_map_id].hitbox_size; i++) {
+                    seg_t line = game_state->map[game_state->current_map_id].hitbox[i];
+                    SDL_RenderDrawLine(renderer, line.a.x, line.a.y, line.b.x, line.b.y);
+                }
+            }
+#endif
+
             break;
         case PAUSED:
             // repaint background as black

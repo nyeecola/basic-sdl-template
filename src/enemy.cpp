@@ -56,14 +56,6 @@ void enemy_set_destination(map_t *map, entity_t *enemy, v2 dest) {
         }
     }
 
-    for (int a = 0; a < 30; a++) {
-        for (int b = 0; b < 40; b++) {
-            printf("%d ", tiles[a][b]);
-        }
-        printf("\n");
-    }
-    printf("\n\n");
-
     if (enemy->enemy_data.path) {
         free(enemy->enemy_data.path);
     }
@@ -76,20 +68,6 @@ void enemy_set_destination(map_t *map, entity_t *enemy, v2 dest) {
         v2 currentPoint = enemy->enemy_data.path[i];
         if (tiles[(int)currentPoint.y][(int) currentPoint.x] == 0) break;
         v2 min = currentPoint;
-
-        if (k < 20) {
-            printf("%d %lf %lf\n", tiles[(int)currentPoint.y][(int)currentPoint.x], currentPoint);
-            k++;
-            puts("----------");
-        printf("%d %d %d", tiles[int(currentPoint.y-1)][int(currentPoint.x-1)], tiles[int(currentPoint.y-1)][int(currentPoint.x)], tiles[int(currentPoint.y-1)][int(currentPoint.x+1)]);
-        printf("\n");
-        printf("%d %d %d", tiles[int(currentPoint.y)][int(currentPoint.x-1)], tiles[int(currentPoint.y)][int(currentPoint.x)], tiles[int(currentPoint.y)][int(currentPoint.x+1)]);
-        printf("\n");
-        printf("%d %d %d", tiles[int(currentPoint.y+1)][int(currentPoint.x-1)], tiles[int(currentPoint.y+1)][int(currentPoint.x)], tiles[int(currentPoint.y+1)][int(currentPoint.x+1)]);
-        printf("\n");
-            puts("----------");
-        }
-
 
         if (tiles[int(min.y)][int(min.x)] > tiles[int(currentPoint.y+1)][int(currentPoint.x)]) {
             if (tiles[int(currentPoint.y+1)][int(currentPoint.x)] != -2) {
@@ -132,12 +110,8 @@ void enemy_set_destination(map_t *map, entity_t *enemy, v2 dest) {
             }
         }
 
-        if (k < 20) {
-        }
-
         enemy->enemy_data.path[++i] = min;
     }
-    puts("END OF PATH");
 
     enemy->enemy_data.path_len = i+1;
     enemy->enemy_data.path_cur = 0;
