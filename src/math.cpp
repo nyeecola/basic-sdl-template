@@ -114,6 +114,14 @@ inline v3 operator*(v3 a, double b) {
     return V3(a.x * b, a.y * b, a.z * b);
 }
 
+inline double operator*(v3 a, v3 b) {
+    return a.x * b.x + a.y * b.y + a.z * b.z;
+}
+
+inline double operator*(v2 a, v2 b) {
+    return a.x * b.x + a.y * b.y;
+}
+
 inline v2 operator/(v2 a, double b) {
     return V2(a.x / b, a.y / b);
 }
