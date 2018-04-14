@@ -67,6 +67,10 @@ struct enemy_t {
     v2 destination;
 };
 
+struct player_t {
+    bool has_password;
+};
+
 // entity generic data 
 struct entity_t {
     v2 previous_pos; // used to calculate rotation
@@ -83,6 +87,7 @@ struct entity_t {
     entity_type_e type;
     union {
         enemy_t enemy_data; // this should be more specific than enemy (it is just an example)
+        player_t player_data;
         // ... other entities data (i.e. shopkeeper specific data)
     };
 };
@@ -90,7 +95,9 @@ struct entity_t {
 enum tile_type_e {
     EMPTY,
     WALL,
-    DOOR
+    DOOR,
+    LOCK,
+    PASSWORD
 };
 
 struct door_t {

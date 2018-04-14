@@ -9,14 +9,14 @@ void create_wall_lines(map_t *map) {
     // bottom up lines
     for (int i = 1; i < map->h; i++) {
         for (int j = 0; j < map->w; j++) {
-            if (map->tile[i-1][j] == WALL) {
-                if (idle && map->tile[i][j] != WALL) { // set starting a and b
+            if (map->tile[i-1][j] == WALL || map->tile[i-1][j] == LOCK) {
+                if (idle && map->tile[i][j] != WALL && map->tile[i][j] != LOCK) { // set starting a and b
                     idle = false;
                     a = V2(j * TILE_SIZE, i * TILE_SIZE);
                     b = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE);
                     has_size = true;
                 } else { // update b
-                    if (map->tile[i][j] != WALL) {
+                    if (map->tile[i][j] != WALL && map->tile[i][j] != LOCK) {
                         b = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE);
                         has_size = true;
                     } else if (has_size) {
@@ -52,14 +52,14 @@ void create_wall_lines(map_t *map) {
     idle = true;
     for (int i = map->h-2; i >= 0; i--) {
         for (int j = 0; j < map->w; j++) {
-            if (map->tile[i+1][j] == WALL) {
-                if (idle && map->tile[i][j] != WALL) { // set starting a and b
+            if (map->tile[i+1][j] == WALL || map->tile[i+1][j] == LOCK) {
+                if (idle && map->tile[i][j] != WALL && map->tile[i][j] != LOCK) { // set starting a and b
                     idle = false;
                     a = V2(j * TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
                     b = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
                     has_size = true;
                 } else { // update b
-                    if (map->tile[i][j] != WALL) {
+                    if (map->tile[i][j] != WALL && map->tile[i][j] != LOCK) {
                         b = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
                         has_size = true;
                     } else if (has_size) {
@@ -94,14 +94,14 @@ void create_wall_lines(map_t *map) {
     idle = true;
     for (int j = 1; j < map->w; j++) {
         for (int i = 0; i < map->h; i++) {
-            if (map->tile[i][j-1] == WALL) {
-                if (idle && map->tile[i][j] != WALL) { // set starting a and b
+            if (map->tile[i][j-1] == WALL || map->tile[i][j-1] == LOCK) {
+                if (idle && map->tile[i][j] != WALL && map->tile[i][j] != LOCK) { // set starting a and b
                     idle = false;
                     a = V2(j * TILE_SIZE, i * TILE_SIZE);
                     b = V2(j * TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
                     has_size = true;
                 } else { // update b
-                    if (map->tile[i][j] != WALL) {
+                    if (map->tile[i][j] != WALL && map->tile[i][j] != LOCK) {
                         b = V2(j * TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
                         has_size = true;
                     } else if (has_size) {
@@ -136,14 +136,14 @@ void create_wall_lines(map_t *map) {
     idle = true;
     for (int j = map->w-2; j >= 0; j--) {
         for (int i = 0; i < map->h; i++) {
-            if (map->tile[i][j+1] == WALL) {
-                if (idle && map->tile[i][j] != WALL) { // set starting a and b
+            if (map->tile[i][j+1] == WALL || map->tile[i][j+1] == LOCK) {
+                if (idle && map->tile[i][j] != WALL && map->tile[i][j] != LOCK) { // set starting a and b
                     idle = false;
                     a = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE);
                     b = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
                     has_size = true;
                 } else { // update b
-                    if (map->tile[i][j] != WALL) {
+                    if (map->tile[i][j] != WALL && map->tile[i][j] != LOCK) {
                         b = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
                         has_size = true;
                     } else if (has_size) {
