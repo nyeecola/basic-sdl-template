@@ -58,8 +58,8 @@ enum game_mode_e {
 };
 
 // enemy specific data
-struct enemy_only_t {
-
+struct enemy_t {
+    v2 destination;
 };
 
 // entity generic data 
@@ -73,7 +73,7 @@ struct entity_t {
 
     entity_type_e type;
     union {
-        enemy_only_t enemy_data; // this should be more specific than enemy (it is just an example)
+        enemy_t enemy_data; // this should be more specific than enemy (it is just an example)
         // ... other entities data (i.e. shopkeeper specific data)
     };
 };

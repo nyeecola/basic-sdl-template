@@ -20,6 +20,7 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->enemies[0].image_w = 36;
     game_state->enemies[0].image_h = 36;
     game_state->enemies[0].type = ENEMY;
+    game_state->enemies[0].enemy_data.destination = V2(100,100);
 
     // initialize map (currently only for testing)
     game_state->map = (map_t*) malloc(sizeof(*(game_state->map)) * MAX_DOOR_PER_ROOM);
@@ -124,7 +125,7 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
     // fps counter
     //printf("dt: %lf\n", dt);
 
-    entity_t *player = &game_state->player; 
+    entity_t *player = &game_state->player;
     switch(game_state->game_mode) {
         case PLAYING:
             {
@@ -201,7 +202,7 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                     rect.h = e[i].image_h;
                     SDL_RenderCopy(renderer, e[i].image, 0, &rect);
 
-                    enemy_goto(&game_state->enemies[i], V2(100,100), dt);
+                    enemy_goto(&game_state->enemies[i], dt);
                 }
             }
 
