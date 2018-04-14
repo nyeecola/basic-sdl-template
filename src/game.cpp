@@ -80,21 +80,25 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->background_color.b = 127;
     game_state->background_color.a = 255;
 
-    // initialize enemy
-    game_state->enemies_count = 1;
-    game_state->enemies[0].pos = V2(20,20);
-    game_state->enemies[0].speed = 150;
-    game_state->enemies[0].image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
-    game_state->enemies[0].image_w = 36;
-    game_state->enemies[0].image_h = 36;
-    game_state->enemies[0].type = ENEMY;
-    game_state->enemies[0].enemy_data.destination = V2(100,100);
-
     // initialize map (currently only for testing)
     game_state->map = (map_t*) malloc(sizeof(*(game_state->map)) * MAX_DOOR_PER_ROOM);
     game_state->current_map_id = 0;
 
     load_maps(game_state->map, renderer);
+
+    // initialize enemy
+    game_state->enemies_count = 1;
+    game_state->enemies[0].pos = V2(400,400);
+    game_state->enemies[0].speed = 150;
+    game_state->enemies[0].image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
+    game_state->enemies[0].image_w = 36;
+    game_state->enemies[0].image_h = 36;
+    game_state->enemies[0].type = ENEMY;
+    game_state->enemies[0].enemy_data.possibleDestinations[0] = V2(100,100);
+    game_state->enemies[0].enemy_data.possibleDestinations[1] = V2(500,100);
+    game_state->enemies[0].enemy_data.possibleDestinations[2] = V2(200,500);
+    game_state->enemies[0].enemy_data.possibleDestinations_len = 3;
+    enemy_set_destination(game_state->map, &game_state->enemies[0], V2(200,200));
 
     // initialize player data
     game_state->player.pos = V2(50, 50);
@@ -244,6 +248,17 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                         player->angle *= 180/M_PI;
                     }
                 }
+
+                int e_c = game_state->enemies_count;
+                for (int i = 0; i < e_c; i++) {
+                    v2 v = game_state->enemies[i].pos - game_state->enemies[i].previous_pos;
+                    if (math_magnitude(v)) {
+                        game_state->enemies[i].angle = atan2(v.y, v.x);
+                        game_state->enemies[i].angle *= 180/M_PI;
+                    }
+
+                    enemy_move(game_state->map, &game_state->enemies[i], dt);
+                }
             }
             handle_doors(game_state);
             break;
@@ -299,9 +314,7 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                     rect.y = e[i].pos.y - e[i].image_h/2;
                     rect.w = e[i].image_w;
                     rect.h = e[i].image_h;
-                    SDL_RenderCopy(renderer, e[i].image, 0, &rect);
-
-                    enemy_goto(&game_state->enemies[i], dt);
+                    SDL_RenderCopyEx(renderer, e[i].image, 0, &rect, e[i].angle, NULL, SDL_FLIP_NONE);
                 }
             }
 

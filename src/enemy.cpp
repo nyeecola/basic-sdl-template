@@ -1,13 +1,162 @@
-void enemy_goto(entity_t *enemy, double dt) {
-    v2 dir = enemy->enemy_data.destination - enemy->pos;
+void enemy_set_destination(map_t *map, entity_t *enemy, v2 dest) {
+    int tiles[30][40];
 
-    double mag = math_magnitude(dir);
-    if (mag == 0) {
-        enemy->enemy_data.destination = V2(rand() % 800, rand() % 600);
-        return;
+    for (int j = 0; j < 30; j++) {
+        for (int i = 0; i < 40; i++) {
+            tiles[j][i] = map->tile[j][i] == WALL ? -2 : -1;
+        }
     }
-    if (mag < 1) {
-        enemy->pos = enemy->enemy_data.destination;
+
+    dest = dest/TILE_SIZE;
+
+    tiles[(int) dest.y][(int) dest.x] = 0;
+    
+
+    v2 queue[30*40];
+    int start = 0, end = 0;
+    queue[end++] = dest;
+
+    v2 enemy_pos = enemy->pos;
+    while (end != start) {
+        v2 cur = queue[start++];
+
+        if (cur == enemy_pos) break;
+
+        if (tiles[int(cur.y -1)][int(cur.x -1)] == -1) {
+            tiles[int(cur.y -1)][int(cur.x -1)] = tiles[int(cur.y)][int(cur.x)] +1;
+            queue[end++] = V2(cur.x -1, cur.y -1);
+        }
+        if (tiles[int(cur.y -1)][int(cur.x)] == -1) {
+            tiles[int(cur.y -1)][int(cur.x)] = tiles[int(cur.y)][int(cur.x)] +1;
+            queue[end++] = V2(cur.x, cur.y -1);
+        }
+        if (tiles[int(cur.y -1)][int(cur.x +1)] == -1) {
+            tiles[int(cur.y -1)][int(cur.x +1)] = tiles[int(cur.y)][int(cur.x)] +1;
+            queue[end++] = V2(cur.x +1, cur.y -1);
+        }
+        if (tiles[int(cur.y)][int(cur.x -1)] == -1) {
+            tiles[int(cur.y)][int(cur.x -1)] = tiles[int(cur.y)][int(cur.x)] +1;
+            queue[end++] = V2(cur.x -1, cur.y);
+        }
+        if (tiles[int(cur.y)][int(cur.x +1)] == -1) {
+            tiles[int(cur.y)][int(cur.x +1)] = tiles[int(cur.y)][int(cur.x)] +1;
+            queue[end++] = V2(cur.x +1, cur.y);
+        }
+        if (tiles[int(cur.y +1)][int(cur.x -1)] == -1) {
+            tiles[int(cur.y +1)][int(cur.x -1)] = tiles[int(cur.y)][int(cur.x)] +1;
+            queue[end++] = V2(cur.x -1, cur.y +1);
+        }
+        if (tiles[int(cur.y +1)][int(cur.x)] == -1) {
+            tiles[int(cur.y +1)][int(cur.x)] = tiles[int(cur.y)][int(cur.x)] +1;
+            queue[end++] = V2(cur.x, cur.y +1);
+        }
+        if (tiles[int(cur.y +1)][int(cur.x +1)] == -1) {
+            tiles[int(cur.y +1)][int(cur.x +1)] = tiles[int(cur.y)][int(cur.x)] +1;
+            queue[end++] = V2(cur.x +1, cur.y +1);
+        }
+    }
+
+    for (int a = 0; a < 30; a++) {
+        for (int b = 0; b < 40; b++) {
+            printf("%d ", tiles[a][b]);
+        }
+        printf("\n");
+    }
+    printf("\n\n");
+
+    if (enemy->enemy_data.path) {
+        free(enemy->enemy_data.path);
+    }
+    enemy->enemy_data.path = (v2*) malloc(end*sizeof(v2));
+    enemy->enemy_data.path[0] = enemy_pos/TILE_SIZE;
+
+    int i = 0;
+    int k = 0;
+    while (true) {
+        v2 currentPoint = enemy->enemy_data.path[i];
+        if (tiles[(int)currentPoint.y][(int) currentPoint.x] == 0) break;
+        v2 min = currentPoint;
+
+        if (k < 20) {
+            printf("%d %lf %lf\n", tiles[(int)currentPoint.y][(int)currentPoint.x], currentPoint);
+            k++;
+            puts("----------");
+        printf("%d %d %d", tiles[int(currentPoint.y-1)][int(currentPoint.x-1)], tiles[int(currentPoint.y-1)][int(currentPoint.x)], tiles[int(currentPoint.y-1)][int(currentPoint.x+1)]);
+        printf("\n");
+        printf("%d %d %d", tiles[int(currentPoint.y)][int(currentPoint.x-1)], tiles[int(currentPoint.y)][int(currentPoint.x)], tiles[int(currentPoint.y)][int(currentPoint.x+1)]);
+        printf("\n");
+        printf("%d %d %d", tiles[int(currentPoint.y+1)][int(currentPoint.x-1)], tiles[int(currentPoint.y+1)][int(currentPoint.x)], tiles[int(currentPoint.y+1)][int(currentPoint.x+1)]);
+        printf("\n");
+            puts("----------");
+        }
+
+
+        if (tiles[int(min.y)][int(min.x)] > tiles[int(currentPoint.y+1)][int(currentPoint.x)]) {
+            if (tiles[int(currentPoint.y+1)][int(currentPoint.x)] != -2) {
+                min = V2(currentPoint.x, currentPoint.y+1);
+            }
+        }
+        if (tiles[int(min.y)][int(min.x)] > tiles[int(currentPoint.y)][int(currentPoint.x-1)]) {
+            if (tiles[int(currentPoint.y)][int(currentPoint.x-1)] != -2) {
+                min = V2(currentPoint.x-1, currentPoint.y);
+            }
+        }
+        if (tiles[int(min.y)][int(min.x)] > tiles[int(currentPoint.y)][int(currentPoint.x+1)]) {
+            if (tiles[int(currentPoint.y)][int(currentPoint.x+1)] != -2) {
+                min = V2(currentPoint.x+1, currentPoint.y);
+            }
+        }
+        if (tiles[int(min.y)][int(min.x)] > tiles[int(currentPoint.y-1)][int(currentPoint.x)]) {
+            if (tiles[int(currentPoint.y-1)][int(currentPoint.x)] != -2) {
+                min = V2(currentPoint.x, currentPoint.y-1);
+            }
+        }
+        if (tiles[int(min.y)][int(min.x)] > tiles[int(currentPoint.y-1)][int(currentPoint.x-1)]) {
+            if (tiles[int(currentPoint.y-1)][int(currentPoint.x-1)] != -2) {
+                min = V2(currentPoint.x-1, currentPoint.y-1);
+            }
+        }
+        if (tiles[int(min.y)][int(min.x)] > tiles[int(currentPoint.y-1)][int(currentPoint.x+1)]) {
+            if (tiles[int(currentPoint.y-1)][int(currentPoint.x+1)] != -2) {
+                min = V2(currentPoint.x+1, currentPoint.y-1);
+            }
+        }
+        if (tiles[int(min.y)][int(min.x)] > tiles[int(currentPoint.y+1)][int(currentPoint.x-1)]) {
+            if (tiles[int(currentPoint.y+1)][int(currentPoint.x-1)] != -2) {
+                min = V2(currentPoint.x-1, currentPoint.y+1);
+            }
+        }
+        if (tiles[int(min.y)][int(min.x)] > tiles[int(currentPoint.y+1)][int(currentPoint.x+1)]) {
+            if (tiles[int(currentPoint.y+1)][int(currentPoint.x+1)] != -2) {
+                min = V2(currentPoint.x+1, currentPoint.y+1);
+            }
+        }
+
+        if (k < 20) {
+        }
+
+        enemy->enemy_data.path[++i] = min;
+    }
+    puts("END OF PATH");
+
+    enemy->enemy_data.path_len = i+1;
+    enemy->enemy_data.path_cur = 0;
+}
+
+void enemy_move(map_t *map, entity_t *enemy, double dt) {
+    enemy->previous_pos = enemy->pos;
+
+    v2 dir = (enemy->enemy_data.path[enemy->enemy_data.path_cur]*TILE_SIZE) - enemy->pos;
+    double mag = math_magnitude(dir);
+
+    if (mag < 4) {
+        enemy->pos = (enemy->enemy_data.path[enemy->enemy_data.path_cur]*TILE_SIZE);
+        if (enemy->enemy_data.path_cur+1 != enemy->enemy_data.path_len) {
+            enemy->enemy_data.path_cur++;
+        }
+        else {
+            enemy_set_destination(map, enemy, enemy->enemy_data.possibleDestinations[rand()%enemy->enemy_data.possibleDestinations_len]);
+        }
         return;
     }
 
@@ -15,3 +164,4 @@ void enemy_goto(entity_t *enemy, double dt) {
 
     enemy->pos += dir;
 }
+

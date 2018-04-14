@@ -129,3 +129,11 @@ inline v2 operator/(v2 a, double b) {
 inline v3 operator/(v3 a, double b) {
     return V3(a.x / b, a.y / b, a.z / b);
 }
+
+inline bool operator==(v2 a, v2 b) {
+    return math_magnitude(a-b) < 0.001;
+}
+
+inline bool operator!=(v2 a, v2 b) {
+    return math_magnitude(a-b) >= 0.001;
+}

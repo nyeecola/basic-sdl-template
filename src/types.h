@@ -59,7 +59,12 @@ enum game_mode_e {
 
 // enemy specific data
 struct enemy_t {
-    v2 destination;
+    v2 *path;
+    int path_len;
+    int path_cur;
+
+    v2 possibleDestinations[10];
+    int possibleDestinations_len;
 };
 
 // entity generic data 
