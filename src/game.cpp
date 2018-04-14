@@ -12,6 +12,15 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->background_color.b = 127;
     game_state->background_color.a = 255;
 
+    // initialize enemy
+    game_state->enemies_count = 1;
+    game_state->enemies[0].pos = V2(20,20);
+    game_state->enemies[0].speed = 0.1;
+    game_state->enemies[0].image = IMG_LoadTexture(renderer, BALL_IMG_PATH);
+    game_state->enemies[0].w = 36;
+    game_state->enemies[0].h = 36;
+    game_state->enemies[0].type = ENEMY;
+
     // initialize map grid (currently only for testing)
     game_state->map.w = 40;
     game_state->map.h = 30;
@@ -73,11 +82,11 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
     assert(renderer);
 
     map_t m;
-    memcpy(&m, &game_state->map, sizeof(m));
     switch(game_state->game_mode) {
         case PLAYING:
             // repaint background
             SDL_RenderClear(renderer);
+            memcpy(&m, &game_state->map, sizeof(m));
             for (int i = 0; i < m.w; i++) {
                 for (int j = 0; j < m.h; j++) {
                     SDL_Rect rect;
@@ -96,6 +105,22 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                             assert(false);
                             break;
                     }
+                }
+            }
+
+            {
+                int e_c = game_state->enemies_count;
+                entity_t e[128];
+                memcpy(&e, &game_state->enemies, sizeof(e));
+                for (int i = 0; i < e_c; i++) {
+                    SDL_Rect rect;
+                    rect.x = e[i].pos.x - e[i].w/2;
+                    rect.y = e[i].pos.y - e[i].h/2;
+                    rect.w = e[i].w;
+                    rect.h = e[i].h;
+                    SDL_RenderCopy(renderer, e[i].image, 0, &rect);
+
+                    enemy_goto(&game_state->enemies[i], V2(100,100), dt);
                 }
             }
             break;

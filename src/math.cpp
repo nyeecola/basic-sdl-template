@@ -102,6 +102,13 @@ inline v2 operator*(v2 a, double b) {
     return V2(a.x * b, a.y * b);
 }
 
+inline v2 & operator*=(v2 &a, double b) {
+    a.x *= b;
+    a.y *= b;
+
+    return a;
+}
+
 inline v3 operator*(v3 a, double b) {
     return V3(a.x * b, a.y * b, a.z * b);
 }

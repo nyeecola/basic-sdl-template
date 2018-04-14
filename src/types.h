@@ -47,7 +47,7 @@ struct color_t {
 
 // entity types
 enum entity_type_e {
-    
+    ENEMY,
 };
 
 enum game_mode_e {
@@ -97,6 +97,10 @@ struct game_state_t {
 
     // map
     map_t map;
+
+    //npcs
+    entity_t enemies[128];
+    int enemies_count;
 
     // scene data
     color_t background_color;
