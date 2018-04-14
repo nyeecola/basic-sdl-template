@@ -87,10 +87,10 @@ enum tile_type_e {
 };
 
 struct door_t {
-    int exit_x;
-    int exit_y;
     int x;
     int y;
+    int exit_x;
+    int exit_y;
     int target_map;
     int target_door;
 };
@@ -104,6 +104,7 @@ struct map_t {
 
     SDL_Texture *wall_sprite;
     SDL_Texture *floor_sprite;
+    SDL_Texture *door_sprite;
 };
 
 // game state data
