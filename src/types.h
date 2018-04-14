@@ -71,6 +71,8 @@ struct entity_t {
     int image_w;
     int image_h;
 
+    int hitbox_r;
+
     entity_type_e type;
     union {
         enemy_only_t enemy_data; // this should be more specific than enemy (it is just an example)

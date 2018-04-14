@@ -25,7 +25,6 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->map = (map_t*) malloc(sizeof(*(game_state->map)) * MAX_DOOR_PER_ROOM);
     game_state->map[0].w = 40;
     game_state->map[0].h = 30;
-
     for (int j = 0; j < game_state->map[0].h; j++) {
         for (int i = 0; i < game_state->map[0].w; i++) {
             if (!i || !j || i == game_state->map[0].w-1 || j == game_state->map[0].h-1) {
@@ -67,9 +66,10 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->player.image = IMG_LoadTexture(renderer, BALL_IMG_PATH);
     //SDL_QueryTexture(game_state->player.image, 0, 0,
                      //&game_state->player.image_w, &game_state->player.image_h);
-    game_state->player.image_w = 36;
-    game_state->player.image_h = 36;
+    game_state->player.image_w = 18;
+    game_state->player.image_h = 18;
     game_state->player.type = PLAYER;
+    game_state->player.hitbox_r = game_state->player.image_w/2;
 
     return game_state;
 }
@@ -115,6 +115,55 @@ void handle_doors(game_state_t *game_state) {
     }
 }
 
+bool seg_intersects_circle(v2 c, double r, v2 a, v2 b) {
+    assert(abs(a.x - b.x) >= 0.0001 || abs(a.y - b.y) >= 0.0001);
+
+    v2 ab = math_normalize(b - a);
+    v2 ac = c - a;
+
+    double dp = ab * ac;
+
+    double mag_ab = math_magnitude(b - a);
+
+    v2 p;
+    if (dp >= 0 && dp <= mag_ab) { // between a and b
+        ab *= dp;
+        p = ab + a;
+    } else if (dp < 0) { // we have to check a
+        p = a;
+    } else { // we have to check b
+        p = b;
+    }
+
+    return (math_magnitude(c-p) <= r);
+}
+
+// NOTE: clockwise points
+bool rect_intersects_circle(v2 p, double r, v2 a, v2 b, v2 c, v2 d) {
+    return (seg_intersects_circle(p, r, a, b) ||
+            seg_intersects_circle(p, r, b, c) ||
+            seg_intersects_circle(p, r, c, d) ||
+            seg_intersects_circle(p, r, d, a));
+}
+
+bool collides_with_walls(v2 pos, double r, map_t map) {
+    for (int i = 0; i < map.h; i++) {
+        for (int j = 0; j < map.w; j++) {
+            if (map.tile[i][j] == WALL) {
+                v2 a, b, c, d;
+                a = V2(j * TILE_SIZE, i * TILE_SIZE);
+                b = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE);
+                c = V2(j * TILE_SIZE + TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
+                d = V2(j * TILE_SIZE, i * TILE_SIZE + TILE_SIZE);
+                if (rect_intersects_circle(pos, r, a, b, c, d)) {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
 
 void game_state_update(game_state_t *game_state, input_t *input, double dt) {
     assert(game_state);
@@ -143,7 +192,15 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                     velocity += V2(1,0);
                 }
                 if (math_magnitude(velocity)) {
-                    player->pos += math_normalize(velocity) * player->speed * dt;
+                    velocity = math_normalize(velocity) * player->speed * dt;
+                    v2 next_pos_h = V2(velocity.x, 0);
+                    v2 next_pos_v = V2(0, velocity.y);
+                    if (!collides_with_walls(next_pos_v + player->pos, player->hitbox_r, game_state->map[game_state->current_map_id])) {
+                        player->pos += next_pos_v;
+                    }
+                    if (!collides_with_walls(next_pos_h + player->pos, player->hitbox_r, game_state->map[game_state->current_map_id])) {
+                        player->pos += next_pos_h;
+                    }
                 }
             }
             handle_doors(game_state);
@@ -189,6 +246,7 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                 }
             }
 
+            // draw enemies
             {
                 int e_c = game_state->enemies_count;
                 entity_t e[128];
