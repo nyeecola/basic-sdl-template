@@ -308,9 +308,11 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                 rect.h = player.image_h;
 
                 v2 v = player.pos - player.previous_pos;
-                double angle = atan2(v.y, v.x);
-                angle *= 180/M_PI;
-                SDL_RenderCopyEx(renderer, player.image, 0, &rect, angle, NULL, SDL_FLIP_NONE);
+                if (math_magnitude(v)) {
+                    double angle = atan2(v.y, v.x);
+                    angle *= 180/M_PI;
+                    SDL_RenderCopyEx(renderer, player.image, 0, &rect, angle, NULL, SDL_FLIP_NONE);
+                }
             }
             break;
         case PAUSED:
