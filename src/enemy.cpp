@@ -145,6 +145,7 @@ void enemy_move(map_t map, entity_t *enemy, double dt) {
     cur_dir.y = sin(enemy->angle/(180.0f/M_PI));
     float dot = normalized_dir * math_normalize(cur_dir);
 
+#if 0
     if (dot >= 0.9999 && dot <= 1.0001) {
         enemy->pos += dir;
     } else {
@@ -164,4 +165,25 @@ void enemy_move(map_t map, entity_t *enemy, double dt) {
             enemy->angle -= enemy->enemy_data.rotation_speed * dt;
         }
     }
+#else
+    if (dot >= 0.88 && dot <= 1.12) {
+        enemy->pos += dir;
+    }
+
+    float target_angle = atan2(dir.y, dir.x);
+    target_angle *= 180.0f/M_PI;
+
+    float a = target_angle;
+    if (a < 0) a += 360;
+    float b = enemy->angle;
+    if (b < 0) b += 360;
+    float c = a - b;
+    if (c < 0) c += 360;
+
+    if (c < 180) {
+        enemy->angle += enemy->enemy_data.rotation_speed * dt;
+    } else {
+        enemy->angle -= enemy->enemy_data.rotation_speed * dt;
+    }
+#endif
 }

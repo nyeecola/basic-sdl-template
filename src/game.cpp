@@ -111,7 +111,7 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->enemies[0].enemy_data.possibleDestinations[2] = V2(10 * TILE_SIZE,25 * TILE_SIZE);
     game_state->enemies[0].enemy_data.possibleDestinations_len = 3;
     game_state->enemies[0].enemy_data.path = NULL;
-    game_state->enemies[0].enemy_data.rotation_speed = 57;
+    game_state->enemies[0].enemy_data.rotation_speed = 50;
     enemy_set_destination(game_state->map[game_state->current_map_id], &game_state->enemies[0], V2(210,210));
 
     // initialize player data
@@ -256,13 +256,14 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                 int e_c = game_state->enemies_count;
                 for (int i = 0; i < e_c; i++) {
                     v2 v = game_state->enemies[i].pos - game_state->enemies[i].previous_pos;
+#if 0
                     if (math_magnitude(v)) {
                         game_state->enemies[i].angle = atan2(v.y, v.x);
                         game_state->enemies[i].angle *= 180/M_PI;
                     }
+#endif
 
                     enemy_move(game_state->map[game_state->current_map_id], &game_state->enemies[i], dt);
-                    //game_state->enemies[i].angle += 140 * dt; // TODO: continue working here
                 }
 
                 map_t *map = &(game_state->map[game_state->current_map_id]);
