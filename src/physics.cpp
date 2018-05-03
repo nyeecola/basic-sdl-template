@@ -223,6 +223,31 @@ bool collides_with_walls(v2 pos, double r, map_t map) {
     return false;
 }
 
+char get_line_intersection(v2 a, v2 b, v2 c, v2 d, v2 *out) {
+    float num = (d.x - c.x) * (a.y - c.y) - (d.y - c.y) * (a.x - c.x);
+    if (abs(num) <= 0.00001) {
+        return 0;
+    }
+    float den = (d.y - c.y) * (b.x - a.x) - (d.x - c.x) * (b.y - a.y);
+    if (abs(den) <= 0.00001) {
+        return 0;
+    }
+    float num_b = (b.x - a.x) * (a.y - c.y) - (b.y - a.y) * (a.x - c.x);
+    if (abs(num_b) <= 0.00001) {
+        return 0;
+    }
+    float u_a = num / den;
+    float u_b = num_b / den;
+    if (u_a >= 0 && u_a <= 1 && u_b >= 0 && u_b <= 1) {
+        if (out) {
+            out->x = a.x + u_a * (b.x - a.x);
+            out->y = a.y + u_a * (b.y - a.y);
+        }
+        return 1;
+    }
+    return 0;
+}
+
 // TODO: check if it breaks for two vertical lines and similar cases
 // Returns 1 if the lines intersect, otherwise 0. In addition, if the lines
 // intersect the intersection point may be stored in the floats i_x and i_y.
@@ -251,12 +276,15 @@ char get_line_intersection(float p0_x, float p0_y, float p1_x, float p1_y,
 }
 
 bool collides_with_walls(v2 a, v2 b, map_t map, v2 *min_p) {
+    bool collides = false;
     double min_dist = -1;
     for (int i = 0; i < map.hitbox_size; i++) {
         v2 ip;
-        char intersects = get_line_intersection(a.x, a.y, b.x, b.y,
+        /*char intersects = get_line_intersection(a.x, a.y, b.x, b.y,
                                                 map.hitbox[i].a.x, map.hitbox[i].a.y,
                                                 map.hitbox[i].b.x, map.hitbox[i].b.y, &ip.x, &ip.y);
+                                                */
+        char intersects = get_line_intersection(a, b, map.hitbox[i].a, map.hitbox[i].b, &ip);
         if (intersects) {
             double mag = math_magnitude(ip-a);
             if (mag < min_dist || min_dist == -1) {
@@ -264,9 +292,9 @@ bool collides_with_walls(v2 a, v2 b, map_t map, v2 *min_p) {
                 min_p->x = ip.x;
                 min_p->y = ip.y;
             }
-            return true;
+            collides = true;
         }
     }
 
-    return false;
+    return collides;
 }

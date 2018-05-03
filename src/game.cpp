@@ -342,9 +342,11 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                     {
                         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 1);
                         v2 v;
-                        if (math_magnitude(e[i].pos - e[i].previous_pos) <= 0.001) {
+                        float m = math_magnitude(e[i].pos - e[i].previous_pos);
+                        if (m <= 0.001) {
                             v = V2(1, 0);
                         } else {
+                            assert(m > 0);
                             v = math_normalize(e[i].pos - e[i].previous_pos);
                         }
                         v2 t;
