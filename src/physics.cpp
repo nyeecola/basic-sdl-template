@@ -8,6 +8,19 @@ void create_wall_lines(map_t *map) {
     v2 a;
     v2 b;
 
+    map->hitbox[map->hitbox_size].a = V2(0, 0);
+    map->hitbox[map->hitbox_size].b = V2(0, map->h * TILE_SIZE);
+    map->hitbox_size++;
+    map->hitbox[map->hitbox_size].a = V2(0, 0);
+    map->hitbox[map->hitbox_size].b = V2(map->w * TILE_SIZE, 0);
+    map->hitbox_size++;
+    map->hitbox[map->hitbox_size].a = V2(map->w * TILE_SIZE, 0);
+    map->hitbox[map->hitbox_size].b = V2(map->w * TILE_SIZE, map->h * TILE_SIZE);
+    map->hitbox_size++;
+    map->hitbox[map->hitbox_size].a = V2(0, map->h * TILE_SIZE);
+    map->hitbox[map->hitbox_size].b = V2(map->w * TILE_SIZE, map->h * TILE_SIZE);
+    map->hitbox_size++;
+
     // bottom up lines
     for (int i = 1; i < map->h; i++) {
         for (int j = 0; j < map->w; j++) {

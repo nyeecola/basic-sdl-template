@@ -101,17 +101,18 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     // initialize enemy
     game_state->enemies_count = 1;
     game_state->enemies[0].pos = V2(400,400);
-    game_state->enemies[0].speed = 150;
+    game_state->enemies[0].speed = 100;
     game_state->enemies[0].image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
-    game_state->enemies[0].image_w = 36;
-    game_state->enemies[0].image_h = 36;
+    game_state->enemies[0].image_w = 18;
+    game_state->enemies[0].image_h = 18;
     game_state->enemies[0].type = ENEMY;
-    game_state->enemies[0].enemy_data.possibleDestinations[0] = V2(100,100);
-    game_state->enemies[0].enemy_data.possibleDestinations[1] = V2(500,100);
-    game_state->enemies[0].enemy_data.possibleDestinations[2] = V2(200,500);
+    game_state->enemies[0].enemy_data.possibleDestinations[0] = V2(5 * TILE_SIZE,5 * TILE_SIZE);
+    game_state->enemies[0].enemy_data.possibleDestinations[1] = V2(25 * TILE_SIZE,5 * TILE_SIZE);
+    game_state->enemies[0].enemy_data.possibleDestinations[2] = V2(10 * TILE_SIZE,25 * TILE_SIZE);
     game_state->enemies[0].enemy_data.possibleDestinations_len = 3;
     game_state->enemies[0].enemy_data.path = NULL;
-    enemy_set_destination(game_state->map, &game_state->enemies[0], V2(200,200));
+    game_state->enemies[0].enemy_data.rotation_speed = 57;
+    enemy_set_destination(game_state->map[game_state->current_map_id], &game_state->enemies[0], V2(210,210));
 
     // initialize player data
     game_state->player.pos = V2(50, 50);
@@ -189,8 +190,6 @@ void faced_tile(game_state_t *gamestate, int *x, int *y) {
     }
 }
 
-
-
 void game_state_update(game_state_t *game_state, input_t *input, double dt) {
     assert(game_state);
     assert(input);
@@ -253,6 +252,7 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                     }
                 }
 
+                // update enemies
                 int e_c = game_state->enemies_count;
                 for (int i = 0; i < e_c; i++) {
                     v2 v = game_state->enemies[i].pos - game_state->enemies[i].previous_pos;
@@ -261,7 +261,8 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                         game_state->enemies[i].angle *= 180/M_PI;
                     }
 
-                    enemy_move(game_state->map, &game_state->enemies[i], dt);
+                    enemy_move(game_state->map[game_state->current_map_id], &game_state->enemies[i], dt);
+                    //game_state->enemies[i].angle += 140 * dt; // TODO: continue working here
                 }
 
                 map_t *map = &(game_state->map[game_state->current_map_id]);
@@ -297,10 +298,10 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
             for (int j = 0; j < m.h; j++) {
                 for (int i = 0; i < m.w; i++) {
                     SDL_Rect rect;
-                    rect.x = 20 * i;
-                    rect.y = 20 * j;
-                    rect.w = 20;
-                    rect.h = 20;
+                    rect.x = TILE_SIZE * i;
+                    rect.y = TILE_SIZE * j;
+                    rect.w = TILE_SIZE;
+                    rect.h = TILE_SIZE;
                      switch(m.tile[j][i]) {
                         case EMPTY:
                             SDL_RenderCopy(renderer, m.floor_sprite, 0, &rect);
@@ -342,6 +343,7 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                     {
                         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 1);
                         v2 v;
+                        /*
                         float m = math_magnitude(e[i].pos - e[i].previous_pos);
                         if (m <= 0.001) {
                             v = V2(1, 0);
@@ -349,10 +351,14 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                             assert(m > 0);
                             v = math_normalize(e[i].pos - e[i].previous_pos);
                         }
+                        */
+                        // TODO: maybe optimize this
+                        v.x = cos(e[i].angle/(180.0f/M_PI));
+                        v.y = sin(e[i].angle/(180.0f/M_PI));
                         v2 t;
                         collides_with_walls(e[i].pos, e[i].pos + v*800, game_state->map[game_state->current_map_id], &t);
                         //SDL_RenderDrawLine(renderer, e[i].pos.x, e[i].pos.y, t.x, t.y);
-                        thickLineRGBA(renderer, e[i].pos.x, e[i].pos.y, t.x, t.y, 5, 255, 0, 0, 255);
+                        thickLineRGBA(renderer, e[i].pos.x, e[i].pos.y, t.x, t.y, 4, 255, 0, 0, 255);
                     }
 
                     SDL_Rect rect;
@@ -376,7 +382,7 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                 SDL_RenderCopyEx(renderer, player.image, 0, &rect, player.angle, NULL, SDL_FLIP_NONE);
             }
 
-#if 1
+#if 0
             // debug draw lines
             {
                 SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);

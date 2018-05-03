@@ -67,6 +67,7 @@ struct enemy_t {
     v2 *path;
     int path_len;
     int path_cur;
+    float rotation_speed;
 
     v2 possibleDestinations[10];
     int possibleDestinations_len;

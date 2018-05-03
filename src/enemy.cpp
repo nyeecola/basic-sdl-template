@@ -1,13 +1,15 @@
-void enemy_set_destination(map_t *map, entity_t *enemy, v2 dest) {
+void enemy_set_destination(map_t map, entity_t *enemy, v2 dest) {
     int tiles[30][40];
 
     for (int j = 0; j < 30; j++) {
         for (int i = 0; i < 40; i++) {
-            tiles[j][i] = map->tile[j][i] == WALL ? -2 : -1;
+            tiles[j][i] = (map.tile[j][i] == WALL || map.tile[j][i] == LOCK) ? -2 : -1;
         }
     }
 
-    dest = dest/TILE_SIZE;
+    dest = V2(((int) dest.x)/TILE_SIZE, ((int) dest.y)/TILE_SIZE);
+    //printf("dest %lf %lf\n", dest);
+    //dest = dest/TILE_SIZE;
 
     tiles[(int) dest.y][(int) dest.x] = 0;
     
@@ -61,6 +63,7 @@ void enemy_set_destination(map_t *map, entity_t *enemy, v2 dest) {
     }
     enemy->enemy_data.path = (v2*) malloc(end*sizeof(v2));
     enemy->enemy_data.path[0] = enemy_pos/TILE_SIZE;
+    enemy->enemy_data.path[0] = V2(((int) enemy_pos.x)/TILE_SIZE, ((int) enemy_pos.y)/TILE_SIZE);
 
     int i = 0;
     int k = 0;
@@ -117,14 +120,14 @@ void enemy_set_destination(map_t *map, entity_t *enemy, v2 dest) {
     enemy->enemy_data.path_cur = 0;
 }
 
-void enemy_move(map_t *map, entity_t *enemy, double dt) {
+void enemy_move(map_t map, entity_t *enemy, double dt) {
     enemy->previous_pos = enemy->pos;
 
-    v2 dir = (enemy->enemy_data.path[enemy->enemy_data.path_cur]*TILE_SIZE) - enemy->pos;
+    v2 dir = (enemy->enemy_data.path[enemy->enemy_data.path_cur]*TILE_SIZE) + V2(TILE_SIZE/2, TILE_SIZE/2) - enemy->pos;
     double mag = math_magnitude(dir);
 
     if (mag < 4) {
-        enemy->pos = (enemy->enemy_data.path[enemy->enemy_data.path_cur]*TILE_SIZE);
+        enemy->pos = (enemy->enemy_data.path[enemy->enemy_data.path_cur]*TILE_SIZE) + V2(TILE_SIZE/2, TILE_SIZE/2);
         if (enemy->enemy_data.path_cur+1 != enemy->enemy_data.path_len) {
             enemy->enemy_data.path_cur++;
         }
@@ -134,7 +137,31 @@ void enemy_move(map_t *map, entity_t *enemy, double dt) {
         return;
     }
 
-    dir = math_normalize(dir) * (enemy->speed*dt);
+    v2 normalized_dir = math_normalize(dir);
+    dir = normalized_dir * (enemy->speed*dt);
 
-    enemy->pos += dir;
+    v2 cur_dir;
+    cur_dir.x = cos(enemy->angle/(180.0f/M_PI));
+    cur_dir.y = sin(enemy->angle/(180.0f/M_PI));
+    float dot = normalized_dir * math_normalize(cur_dir);
+
+    if (dot >= 0.9999 && dot <= 1.0001) {
+        enemy->pos += dir;
+    } else {
+        float target_angle = atan2(dir.y, dir.x);
+        target_angle *= 180.0f/M_PI;
+
+        float a = target_angle;
+        if (a < 0) a += 360;
+        float b = enemy->angle;
+        if (b < 0) b += 360;
+        float c = a - b;
+        if (c < 0) c += 360;
+
+        if (c < 180) {
+            enemy->angle += enemy->enemy_data.rotation_speed * dt;
+        } else {
+            enemy->angle -= enemy->enemy_data.rotation_speed * dt;
+        }
+    }
 }
