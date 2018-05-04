@@ -170,20 +170,26 @@ void enemy_move(map_t map, entity_t *enemy, double dt) {
         enemy->pos += dir;
     }
 
-    float target_angle = atan2(dir.y, dir.x);
-    target_angle *= 180.0f/M_PI;
+    if (dot <= 0.999 || dot >= 1.001) {
+        float target_angle = atan2(dir.y, dir.x);
+        target_angle *= 180.0f/M_PI;
 
-    float a = target_angle;
-    if (a < 0) a += 360;
-    float b = enemy->angle;
-    if (b < 0) b += 360;
-    float c = a - b;
-    if (c < 0) c += 360;
+        float a = target_angle;
+        if (a < 0) a += 360;
+        float b = enemy->angle;
+        if (b < 0) b += 360;
+        float c = a - b;
+        if (c < 0) c += 360;
 
-    if (c < 180) {
-        enemy->angle += enemy->enemy_data.rotation_speed * dt;
-    } else {
-        enemy->angle -= enemy->enemy_data.rotation_speed * dt;
+        if (c < 180) {
+            enemy->angle += enemy->enemy_data.rotation_speed * dt;
+            if (enemy->angle > 360) enemy->angle -= 360;
+            if (enemy->angle < 0) enemy->angle += 360;
+        } else {
+            enemy->angle -= enemy->enemy_data.rotation_speed * dt;
+            if (enemy->angle > 360) enemy->angle -= 360;
+            if (enemy->angle < 0) enemy->angle += 360;
+        }
     }
 #endif
 }
