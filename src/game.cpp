@@ -126,6 +126,9 @@ void game_state_initialize(game_state_t *game_state, SDL_Renderer *renderer) {
     // game mode
     game_state->game_mode = PLAYING;
 
+    // finale
+    game_state->finale = false;
+
     // background_color
     game_state->background_color.r = 0;
     game_state->background_color.g = 0;
@@ -222,6 +225,9 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
     switch(game_state->game_mode) {
         case PLAYING:
             {
+                // finale
+                game_state->finale_timer -= dt;
+
                 // keyboard ball movement
                 v2 velocity = V2(0,0);
                 if (input->keys_pressed[SDL_SCANCODE_W]) {
@@ -322,44 +328,57 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
             // repaint background
             SDL_RenderClear(renderer);
             memcpy(&m, &game_state->map[game_state->current_map_id], sizeof(m));
-            for (int j = 0; j < m.h; j++) {
-                for (int i = 0; i < m.w; i++) {
-                    SDL_Rect rect;
-                    rect.x = TILE_SIZE * i;
-                    rect.y = TILE_SIZE * j;
-                    rect.w = TILE_SIZE;
-                    rect.h = TILE_SIZE;
-                     switch(m.tile[j][i]) {
-                        case EMPTY:
-                            SDL_RenderCopy(renderer, m.floor_sprite, 0, &rect);
-                            break;
-                        case WALL:
-                            SDL_RenderCopy(renderer, m.wall_sprite, 0, &rect);
-                            break;
-                        case DOOR:
-                            if ( i == 0 || i == 39 ) {
-                                SDL_RenderCopy(renderer, m.doorh_sprite, 0, &rect);
-                            } else {
-                                SDL_RenderCopy(renderer, m.doorw_sprite, 0, &rect); 
-                            }
-                            break;
-                        case PASSWORD:
-                            SDL_RenderCopy(renderer, m.password_sprite, 0, &rect);
-                            break;
-                        case LOCK:
-                            if ( m.tile[j][i-1] == WALL ) {
-                                SDL_RenderCopy(renderer, m.lockh_sprite, 0, &rect);
-                            } else {
-                                SDL_RenderCopy(renderer, m.lockw_sprite, 0, &rect); 
-                            }
-                            break;
-                        case LASER_SOURCE:
-                            SDL_RenderCopy(renderer, m.laser_source_sprite, 0, &rect);
-                            break;
-                        default:
-                            assert(false);
-                            break;
+            {
+                v2 laser_source_pos;
+                bool has_laser_source = false;
+                for (int j = 0; j < m.h; j++) {
+                    for (int i = 0; i < m.w; i++) {
+                        SDL_Rect rect;
+                        rect.x = TILE_SIZE * i;
+                        rect.y = TILE_SIZE * j;
+                        rect.w = TILE_SIZE;
+                        rect.h = TILE_SIZE;
+                        switch(m.tile[j][i]) {
+                            case EMPTY:
+                                SDL_RenderCopy(renderer, m.floor_sprite, 0, &rect);
+                                break;
+                            case WALL:
+                                SDL_RenderCopy(renderer, m.wall_sprite, 0, &rect);
+                                break;
+                            case DOOR:
+                                if ( i == 0 || i == 39 ) {
+                                    SDL_RenderCopy(renderer, m.doorh_sprite, 0, &rect);
+                                } else {
+                                    SDL_RenderCopy(renderer, m.doorw_sprite, 0, &rect); 
+                                }
+                                break;
+                            case PASSWORD:
+                                SDL_RenderCopy(renderer, m.password_sprite, 0, &rect);
+                                break;
+                            case LOCK:
+                                if ( m.tile[j][i-1] == WALL ) {
+                                    SDL_RenderCopy(renderer, m.lockh_sprite, 0, &rect);
+                                } else {
+                                    SDL_RenderCopy(renderer, m.lockw_sprite, 0, &rect); 
+                                }
+                                break;
+                            case LASER_SOURCE:
+                                laser_source_pos = V2(i, j);
+                                has_laser_source = true;
+                                break;
+                            default:
+                                assert(false);
+                                break;
+                        }
                     }
+                }
+                if (has_laser_source) {
+                    SDL_Rect rect;
+                    rect.x = TILE_SIZE * laser_source_pos.x;
+                    rect.y = TILE_SIZE * laser_source_pos.y;
+                    rect.w = TILE_SIZE * 2;
+                    rect.h = TILE_SIZE * 2;
+                    SDL_RenderCopy(renderer, m.laser_source_sprite, 0, &rect);
                 }
             }
 
@@ -371,18 +390,26 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                 memcpy(&e, map.enemies, sizeof(e));
                 for (int i = 0; i < e_c; i++) {
                     // draw laser
+                    if (!game_state->finale ||
+                            (game_state->finale_timer >= 4.5 && game_state->finale_timer <= 4.7) ||
+                            (game_state->finale_timer >= 4.1 && game_state->finale_timer <= 4.3) ||
+                            (game_state->finale_timer >= 3.7 && game_state->finale_timer <= 3.9) ||
+                            (game_state->finale_timer >= 3.3 && game_state->finale_timer <= 3.5) ||
+                            (game_state->finale_timer >= 2.9 && game_state->finale_timer <= 3.1)
+                            /*(game_state->finale_timer >= 2.5 && game_state->finale_timer <= 2.7) ||
+                            (game_state->finale_timer >= 0.8 && game_state->finale_timer <= 1.8)*/)
                     {
                         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 1);
                         v2 v;
                         /*
-                        float m = math_magnitude(e[i].pos - e[i].previous_pos);
-                        if (m <= 0.001) {
-                            v = V2(1, 0);
-                        } else {
-                            assert(m > 0);
-                            v = math_normalize(e[i].pos - e[i].previous_pos);
-                        }
-                        */
+                           float m = math_magnitude(e[i].pos - e[i].previous_pos);
+                           if (m <= 0.001) {
+                           v = V2(1, 0);
+                           } else {
+                           assert(m > 0);
+                           v = math_normalize(e[i].pos - e[i].previous_pos);
+                           }
+                           */
                         // TODO: maybe optimize this
                         v.x = cos(e[i].angle/(180.0f/M_PI));
                         v.y = sin(e[i].angle/(180.0f/M_PI));
@@ -390,10 +417,11 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                         collides_with_walls(e[i].pos, e[i].pos + v*800, map, &t);
 
                         // NOTE: quick shitty implementation, should actually be in game_state_update
-                        if (seg_intersects_circle(game_state->player.pos,
-                                                  game_state->player.hitbox_r,
-                                                  e[i].pos,
-                                                  t)) {
+                        if (!game_state->finale &&
+                            seg_intersects_circle(game_state->player.pos,
+                                    game_state->player.hitbox_r,
+                                    e[i].pos,
+                                    t)) {
                             for (int k = 0; k < game_state->maps; k++) {
                                 free(game_state->map[k].hitbox);
                                 SDL_DestroyTexture(game_state->map[k].wall_sprite);

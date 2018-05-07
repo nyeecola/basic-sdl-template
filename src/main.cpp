@@ -109,6 +109,10 @@ int main(int, char *[]) {
                             game_state->game_mode = PLAYING;
                         }
                     }
+                    if (event.key.keysym.sym == SDLK_t) {
+                        game_state->finale = true;
+                        game_state->finale_timer = 5;
+                    }
                     break;
             }
         }

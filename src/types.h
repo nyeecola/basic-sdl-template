@@ -154,4 +154,8 @@ struct game_state_t {
 
     // scene data
     color_t background_color;
+
+    // finale
+    bool finale;
+    double finale_timer;
 };
