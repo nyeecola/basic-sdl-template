@@ -226,7 +226,7 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
         case PLAYING:
             {
                 // finale
-                game_state->finale_timer -= dt;
+                if (game_state->finale_timer >= 0) game_state->finale_timer -= dt;
 
                 // movement
                 v2 velocity = V2(0,0);
@@ -510,6 +510,15 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
             }
 #endif
 
+            if (game_state->finale && game_state->finale_timer <= 1) {
+                SDL_Rect rect;
+                rect.x = 0;
+                rect.y = 0;
+                rect.w = DEFAULT_SCREEN_WIDTH;
+                rect.h = DEFAULT_SCREEN_HEIGHT;
+                the_end_image = IMG_LoadTexture(renderer, THE_END_IMG_PATH);
+                SDL_RenderCopy(renderer, the_end_image, 0, &rect);
+            }
             break;
         case PAUSED:
             // repaint background as black

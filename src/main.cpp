@@ -10,6 +10,8 @@
 #include <cmath>
 #include <cassert>
 
+SDL_Texture *the_end_image;
+
 // ---------------------
 // Local includes
 // ---------------------
@@ -89,6 +91,7 @@ int main(int, char *[]) {
     uint64_t current_counter = SDL_GetPerformanceCounter();
     uint64_t last_counter = 0;
     double delta_time = 0;
+    the_end_image = IMG_LoadTexture(renderer, THE_END_IMG_PATH);
     while (running) {
         // handle I/O events
         SDL_Event event;
