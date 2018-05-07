@@ -18,17 +18,16 @@ void add_enemy_to_map(map_t *map, SDL_Renderer *renderer, v2 *vecs, int n) {
     map->enemies_count++;
 }
 
-void load_maps(map_t *map, SDL_Renderer *renderer) {
+void load_maps(game_state_t *game_state, map_t *map, SDL_Renderer *renderer) {
     FILE *arq = fopen(MAPS_SOURCE_PATH, "r");
 
-    int maps;
     int trash;
     char current;
 
-    trash = fscanf(arq, "%d", &maps);
-    assert(maps <= MAX_MAPS_PER_RUN);
+    trash = fscanf(arq, "%d", &game_state->maps);
+    assert(game_state->maps <= MAX_MAPS_PER_RUN);
 
-    for(int m=0 ; m < maps ; m++) {
+    for(int m=0 ; m < game_state->maps ; m++) {
         v2 vecs[30][30];
         int ns[30] = {0};
 
@@ -95,7 +94,7 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
 
     fclose(arq);
 
-    for(int a=0 ; a < maps ; a++) {
+    for(int a=0 ; a < game_state->maps ; a++) {
         map[a].wall_sprite = IMG_LoadTexture(renderer, WALL_IMG_PATH);
         assert(map[a].wall_sprite);
         map[a].floor_sprite = IMG_LoadTexture(renderer, FLOOR_IMG_PATH);
@@ -113,10 +112,8 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
     }
 }
 
-game_state_t *game_state_initialize(SDL_Renderer *renderer) {
+void game_state_initialize(game_state_t *game_state, SDL_Renderer *renderer) {
     assert(renderer);
-
-    game_state_t *game_state = (game_state_t *) malloc(sizeof(*game_state));
 
     // game mode
     game_state->game_mode = PLAYING;
@@ -130,7 +127,7 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     // initialize maps
     game_state->map = (map_t*) malloc(sizeof(*(game_state->map)) * MAX_DOOR_PER_ROOM);
     game_state->current_map_id = 0;
-    load_maps(game_state->map, renderer);
+    load_maps(game_state, game_state->map, renderer);
     // map static hitbox (only need to explicitly call it for the first map)
     create_wall_lines(&game_state->map[0]);
 
@@ -146,8 +143,6 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->player.type = PLAYER;
     game_state->player.hitbox_r = game_state->player.image_w/2;
     game_state->player.player_data.has_password = false;
-
-    return game_state;
 }
 
 v2 entity_tile_pos(entity_t entity) {
@@ -173,7 +168,6 @@ void handle_doors(game_state_t *game_state) {
     assert(y >= 0);
     assert(x < map.w);
     assert(y < map.h);
-
 
     if ( map.tile[y][x] == DOOR ) {
         for(int i=0 ; i < map.doors ; i++) {
@@ -385,6 +379,39 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                         v.y = sin(e[i].angle/(180.0f/M_PI));
                         v2 t;
                         collides_with_walls(e[i].pos, e[i].pos + v*800, map, &t);
+
+                        // NOTE: quick shitty implementation, should actually be in game_state_update
+                        if (seg_intersects_circle(game_state->player.pos,
+                                                  game_state->player.hitbox_r,
+                                                  e[i].pos,
+                                                  t)) {
+                            for (int k = 0; k < game_state->maps; k++) {
+                                free(game_state->map[k].hitbox);
+                                SDL_DestroyTexture(game_state->map[k].wall_sprite);
+                                SDL_DestroyTexture(game_state->map[k].floor_sprite);
+                                SDL_DestroyTexture(game_state->map[k].doorw_sprite);
+                                SDL_DestroyTexture(game_state->map[k].doorh_sprite);
+                                SDL_DestroyTexture(game_state->map[k].lockw_sprite);
+                                SDL_DestroyTexture(game_state->map[k].lockh_sprite);
+                                SDL_DestroyTexture(game_state->map[k].password_sprite);
+                                for (int q = 0; q < game_state->map[k].enemies_count; q++) {
+                                    if (game_state->map[k].enemies[q].enemy_data.path) {
+                                        free(game_state->map[k].enemies[q].enemy_data.path);
+                                    }
+                                    if (game_state->map[k].enemies[q].image) {
+                                        SDL_DestroyTexture(game_state->map[k].enemies[q].image);
+                                    }
+                                    if (game_state->map[k].enemies[q].image2) {
+                                        SDL_DestroyTexture(game_state->map[k].enemies[q].image2);
+                                    }
+                                }
+                            }
+                            free(game_state->map);
+                            if (game_state->player.image) SDL_DestroyTexture(game_state->player.image);
+                            if (game_state->player.image2) SDL_DestroyTexture(game_state->player.image2);
+                            game_state_initialize(game_state, renderer);
+                        }
+
                         //SDL_RenderDrawLine(renderer, e[i].pos.x, e[i].pos.y, t.x, t.y);
                         thickLineRGBA(renderer, e[i].pos.x, e[i].pos.y, t.x, t.y, 4, 255, 0, 0, 255);
                     }

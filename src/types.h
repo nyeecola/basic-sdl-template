@@ -144,6 +144,7 @@ struct game_state_t {
 
     // map
     int current_map_id;
+    int maps;
     map_t *map;
 
     // player
