@@ -228,7 +228,7 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                 // finale
                 game_state->finale_timer -= dt;
 
-                // keyboard ball movement
+                // movement
                 v2 velocity = V2(0,0);
                 if (input->keys_pressed[SDL_SCANCODE_W]) {
                     velocity += V2(0,-1);
@@ -245,10 +245,34 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                 if (input->keys_pressed[SDL_SCANCODE_E]) {
                     if ( game_state->player.player_data.has_password ) {
                         int x,y;
-                        faced_tile(game_state, &x, &y);
+                        //faced_tile(game_state, &x, &y);
+                        v2 player_tile = entity_tile_pos(game_state->player);
+                        x = player_tile.x;
+                        y = player_tile.y;
                         map_t *map = &(game_state->map[game_state->current_map_id]);
-                        if ( map->tile[y][x] == LOCK ) {
-                            map->tile[y][x] = EMPTY;
+                        if ( map->tile[y+1][x] == LOCK ) {
+                            map->tile[y+1][x] = EMPTY;
+                            create_wall_lines(map);
+                            game_state->player.player_data.has_password = false;
+                            SDL_Texture *aux = game_state->player.image;        
+                            game_state->player.image = game_state->player.image2;       
+                            game_state->player.image2 = aux;
+                        } else if ( map->tile[y-1][x] == LOCK ) {
+                            map->tile[y-1][x] = EMPTY;
+                            create_wall_lines(map);
+                            game_state->player.player_data.has_password = false;
+                            SDL_Texture *aux = game_state->player.image;        
+                            game_state->player.image = game_state->player.image2;       
+                            game_state->player.image2 = aux;
+                        } else if ( map->tile[y][x+1] == LOCK ) {
+                            map->tile[y][x+1] = EMPTY;
+                            create_wall_lines(map);
+                            game_state->player.player_data.has_password = false;
+                            SDL_Texture *aux = game_state->player.image;        
+                            game_state->player.image = game_state->player.image2;       
+                            game_state->player.image2 = aux;
+                        } else if ( map->tile[y][x-1] == LOCK ) {
+                            map->tile[y][x-1] = EMPTY;
                             create_wall_lines(map);
                             game_state->player.player_data.has_password = false;
                             SDL_Texture *aux = game_state->player.image;        
