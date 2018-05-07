@@ -29,3 +29,4 @@ const char * const LOCKH_IMG_PATH = "assets/lockh_cell.png";
 const char * const DOORW_IMG_PATH = "assets/doorw_cell.png";
 const char * const LOCKW_IMG_PATH = "assets/lockw_cell.png";
 const char * const PASSWORD_IMG_PATH = "assets/password_cell.png";
+const char * const LASER_SOURCE_IMG_PATH = "assets/laser-source.png";

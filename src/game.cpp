@@ -59,6 +59,10 @@ void load_maps(game_state_t *game_state, map_t *map, SDL_Renderer *renderer) {
                         map[m].tile[y][x] = PASSWORD;
                         break;
                     }
+                    case 'S': {
+                        map[m].tile[y][x] = LASER_SOURCE;
+                        break;
+                    }
                     default: {
                         if (current >= 'a' && current <= 'z') {
                             map[m].tile[y][x] = EMPTY;
@@ -109,6 +113,10 @@ void load_maps(game_state_t *game_state, map_t *map, SDL_Renderer *renderer) {
         assert(map[a].doorw_sprite);
         map[a].lockw_sprite = IMG_LoadTexture(renderer, LOCKW_IMG_PATH);
         assert(map[a].lockw_sprite);
+        map[a].laser_source_sprite = IMG_LoadTexture(renderer, LASER_SOURCE_IMG_PATH);
+        assert(map[a].laser_source_sprite);
+
+        create_wall_lines(&game_state->map[a]);
     }
 }
 
@@ -128,8 +136,6 @@ void game_state_initialize(game_state_t *game_state, SDL_Renderer *renderer) {
     game_state->map = (map_t*) malloc(sizeof(*(game_state->map)) * MAX_DOOR_PER_ROOM);
     game_state->current_map_id = 0;
     load_maps(game_state, game_state->map, renderer);
-    // map static hitbox (only need to explicitly call it for the first map)
-    create_wall_lines(&game_state->map[0]);
 
     // initialize player data
     game_state->player.pos = V2(50, 50);
@@ -175,7 +181,7 @@ void handle_doors(game_state_t *game_state) {
                 game_state->current_map_id = map.door[i].target_map;
                 int d = map.door[i].target_door;
                 map = game_state->map[game_state->current_map_id];
-                create_wall_lines(&game_state->map[game_state->current_map_id]);
+                //create_wall_lines(&game_state->map[game_state->current_map_id]);
                 door_t door = map.door[d];
 
                 game_state->player.pos.x = door.exit_x * TILE_SIZE + TILE_SIZE/2;
@@ -347,6 +353,9 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                                 SDL_RenderCopy(renderer, m.lockw_sprite, 0, &rect); 
                             }
                             break;
+                        case LASER_SOURCE:
+                            SDL_RenderCopy(renderer, m.laser_source_sprite, 0, &rect);
+                            break;
                         default:
                             assert(false);
                             break;
@@ -394,6 +403,7 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                                 SDL_DestroyTexture(game_state->map[k].lockw_sprite);
                                 SDL_DestroyTexture(game_state->map[k].lockh_sprite);
                                 SDL_DestroyTexture(game_state->map[k].password_sprite);
+                                SDL_DestroyTexture(game_state->map[k].laser_source_sprite);
                                 for (int q = 0; q < game_state->map[k].enemies_count; q++) {
                                     if (game_state->map[k].enemies[q].enemy_data.path) {
                                         free(game_state->map[k].enemies[q].enemy_data.path);

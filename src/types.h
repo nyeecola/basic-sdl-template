@@ -104,6 +104,7 @@ enum tile_type_e {
     WALL,
     DOOR,
     LOCK,
+    LASER_SOURCE,
     PASSWORD
 };
 
@@ -135,6 +136,7 @@ struct map_t {
     SDL_Texture *lockw_sprite;
     SDL_Texture *lockh_sprite;
     SDL_Texture *password_sprite;
+    SDL_Texture *laser_source_sprite;
 };
 
 // game state data
