@@ -2,34 +2,34 @@
 
 40 30 2
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+O     c   b                            O
+OO   OOOOOOOOOOOOO  OOOOOOOOOOOOOOOOOOOO
+O     d          O                 r   O
+O    a           O   P r           OO  O
+OOOOOOOOOOOOOO  OOO  OOOOOOOO  OOOOO   O
+O  d            dO    b a         r    O
+O            P   O           L     b   O
+OOOOOOOOOO  OOOOOO   OOOOOOOOO  OOOOOOOO
+O     c        O     O             e   O
+Ob O  OOOOOOOO O     O e             c O
+O  O           O     O          e      O
+OOOO  f        OO   OOO  OOOOOOOOOOOOOOO
 O                                      O
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOO     OOOOO
+O   z f                         z      O
+O                  z                   O
+OOOOOOOOOOOOOOOOOOOOOOOOOO  OOOOOOOOOOOO
 O                                      O
-O                O                     O
-O                O   P             OOOOO
-O                O             P       O
-O                O                     O
-O                O  P                  O
-O            P   O           L         O
-O              OOO                     O
-O              O                       O
-O  O OOOOOOOOO O                       O
-O  O           O                       O
-OOOO           OO   OOOOOOOOOOOOOOOOOOOO
+O     f                           g    O
 O                                      O
+OOO  OOOOOOOOOOOOOOOOOOOOO  OOOOOOOOOOOO
 O                                      O
+O     g           a                    O
+OOOOOOOOOOO  OOOOOOOOOOOOOOOOOOO   OO  O
+O                                 g    O
 O                                      O
-O                                      O
-O                                      O
-O                                      O
-O                                      O
-O                                      O
-O                                      O
-O                                      O
-O                                      O
-O                                      O
-O                                      O
-O                                      O
-O                                      O
+O  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+O                  b                   O
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 39 7  38  7  1  0
 39 25 38 25  1  1
@@ -40,7 +40,7 @@ OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 O                                      O
 O                                      O
 O                                      O
-O                                      O
+O                                 g    O
 O                                      O
 O                                      O
 O                                      O
@@ -48,11 +48,11 @@ O                                      O
 O                                      O
 O                                      O
 O              OOOOOOOOO               O
-O              O                       O
-O           OOOOOOOOOOOOOOOOOOOOOOOOOOOO
+O             aO a                     O
+O           OOOOOOOOO OOOOOOOOOOOOOOO OO
 O           O     O                    O
-O           O     O                    O
-O                 O                    O
+O           O    aO                    O
+O                 Oa              g    O
 O           O     O                    O
 O                 O                    O
 O                 O                    O

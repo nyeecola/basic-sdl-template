@@ -1,3 +1,23 @@
+void add_enemy_to_map(map_t *map, SDL_Renderer *renderer, v2 *vecs, int n) {
+    assert(n >= 2);
+
+    int index = map->enemies_count;
+    map->enemies[index].pos = vecs[0] * TILE_SIZE;
+    map->enemies[index].speed = 100;
+    map->enemies[index].image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
+    map->enemies[index].image_w = 18;
+    map->enemies[index].image_h = 18;
+    map->enemies[index].type = ENEMY;
+    for (int i = 0; i < n; i++) {
+        map->enemies[index].enemy_data.possibleDestinations[i] = vecs[i] * TILE_SIZE;
+    }
+    map->enemies[index].enemy_data.possibleDestinations_len = 3;
+    map->enemies[index].enemy_data.path = NULL;
+    map->enemies[index].enemy_data.rotation_speed = 50;
+    enemy_set_destination(*map, &map->enemies[index], vecs[1] * TILE_SIZE);
+    map->enemies_count++;
+}
+
 void load_maps(map_t *map, SDL_Renderer *renderer) {
     FILE *arq = fopen(MAPS_SOURCE_PATH, "r");
 
@@ -9,6 +29,9 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
     assert(maps <= MAX_MAPS_PER_RUN);
 
     for(int m=0 ; m < maps ; m++) {
+        v2 vecs[30][30];
+        int ns[30] = {0};
+
         map[m].enemies_count = 0;
         trash = fscanf(arq, "%d %d %d", &map[m].w, &map[m].h, &map[m].doors);
         do {
@@ -38,8 +61,15 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
                         break;
                     }
                     default: {
-                        printf("%d\n", (int) current);
-                        assert(false);
+                        if (current >= 'a' && current <= 'z') {
+                            map[m].tile[y][x] = EMPTY;
+                            int index = current - 'a';
+                            vecs[index][ns[index]] = V2(x, y);
+                            ns[index]++;
+                        } else {
+                            printf("%d\n", (int) current);
+                            assert(false);
+                        }
                         break;
                     }
                 }
@@ -47,6 +77,11 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
             do {
                 trash = fscanf(arq, "%c", &current);
             } while ( current != '\n');
+        }
+
+        for (int i = 0; i < 30; i++) {
+            if (ns[i] == 0) continue;
+            add_enemy_to_map(&map[m], renderer, vecs[i], ns[i]);
         }
 
         for(int i=0 ; i < map[m].doors ; i++) {
@@ -78,24 +113,6 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
     }
 }
 
-void add_enemy_to_map(map_t *map, SDL_Renderer *renderer, v2 pos, v2 loc1, v2 loc2, v2 loc3) {
-    int index = map->enemies_count;
-    map->enemies[index].pos = pos * TILE_SIZE;
-    map->enemies[index].speed = 100;
-    map->enemies[index].image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
-    map->enemies[index].image_w = 18;
-    map->enemies[index].image_h = 18;
-    map->enemies[index].type = ENEMY;
-    map->enemies[index].enemy_data.possibleDestinations[0] = loc1 * TILE_SIZE;
-    map->enemies[index].enemy_data.possibleDestinations[1] = loc2 * TILE_SIZE;
-    map->enemies[index].enemy_data.possibleDestinations[2] = loc3 * TILE_SIZE;
-    map->enemies[index].enemy_data.possibleDestinations_len = 3;
-    map->enemies[index].enemy_data.path = NULL;
-    map->enemies[index].enemy_data.rotation_speed = 50;
-    enemy_set_destination(*map, &map->enemies[index], loc1 * TILE_SIZE);
-    map->enemies_count++;
-}
-
 game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     assert(renderer);
 
@@ -110,19 +127,12 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     game_state->background_color.b = 127;
     game_state->background_color.a = 255;
 
-    // initialize map (currently only for testing)
+    // initialize maps
     game_state->map = (map_t*) malloc(sizeof(*(game_state->map)) * MAX_DOOR_PER_ROOM);
     game_state->current_map_id = 0;
-
     load_maps(game_state->map, renderer);
-    create_wall_lines(&game_state->map[0]); // map static hitbox
-
-    // initialize enemy
-    add_enemy_to_map(&game_state->map[0], renderer, V2(20, 20), V2(5, 5), V2(25, 5), V2(10, 25));
-    add_enemy_to_map(&game_state->map[0], renderer, V2(10, 14), V2(25, 5), V2(10, 10), V2(4, 16));
-    add_enemy_to_map(&game_state->map[0], renderer, V2(20, 2), V2(10, 25), V2(2, 28), V2(34, 19));
-    add_enemy_to_map(&game_state->map[0], renderer, V2(9, 3), V2(11, 16), V2(22, 8), V2(31, 17));
-    add_enemy_to_map(&game_state->map[1], renderer, V2(9, 3), V2(11, 16), V2(22, 8), V2(31, 17));
+    // map static hitbox (only need to explicitly call it for the first map)
+    create_wall_lines(&game_state->map[0]);
 
     // initialize player data
     game_state->player.pos = V2(50, 50);
