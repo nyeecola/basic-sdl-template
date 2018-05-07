@@ -11,7 +11,7 @@ void add_enemy_to_map(map_t *map, SDL_Renderer *renderer, v2 *vecs, int n) {
     for (int i = 0; i < n; i++) {
         map->enemies[index].enemy_data.possibleDestinations[i] = vecs[i] * TILE_SIZE;
     }
-    map->enemies[index].enemy_data.possibleDestinations_len = 3;
+    map->enemies[index].enemy_data.possibleDestinations_len = n;
     map->enemies[index].enemy_data.path = NULL;
     map->enemies[index].enemy_data.rotation_speed = 50;
     enemy_set_destination(*map, &map->enemies[index], vecs[1] * TILE_SIZE);
@@ -32,16 +32,18 @@ void load_maps(game_state_t *game_state, map_t *map, SDL_Renderer *renderer) {
         int ns[30] = {0};
 
         map[m].enemies_count = 0;
-        trash = fscanf(arq, "%d %d %d", &map[m].w, &map[m].h, &map[m].doors);
+        trash = fscanf(arq, " %d %d %d", &map[m].w, &map[m].h, &map[m].doors);
         do {
-            trash = fscanf(arq, "%c", &current);
+            //trash = fscanf(arq, "%c", &current);
+            current = fgetc(arq);
         } while ( current != '\n');
         assert(map[m].w <= 40);
         assert(map[m].h <= 30);
         assert(map[m].doors <= MAX_DOOR_PER_ROOM);
         for(int y=0 ; y < map[m].h ; y++) {
             for(int x=0 ; x < map[m].w ; x++) {
-                trash = fscanf(arq, "%c", &current);
+                //trash = fscanf(arq, " %c", &current);
+                current = fgetc(arq);
                 switch(current) {
                     case ' ': {
                         map[m].tile[y][x] = EMPTY;
@@ -70,7 +72,8 @@ void load_maps(game_state_t *game_state, map_t *map, SDL_Renderer *renderer) {
                             vecs[index][ns[index]] = V2(x, y);
                             ns[index]++;
                         } else {
-                            printf("%d\n", (int) current);
+                            printf("%d %d\n", x, y);
+                            printf("%c\n", current);
                             assert(false);
                         }
                         break;
@@ -78,7 +81,8 @@ void load_maps(game_state_t *game_state, map_t *map, SDL_Renderer *renderer) {
                 }
             }
             do {
-                trash = fscanf(arq, "%c", &current);
+                //trash = fscanf(arq, "%c", &current);
+                current = fgetc(arq);
             } while ( current != '\n');
         }
 
@@ -154,6 +158,35 @@ void game_state_initialize(game_state_t *game_state, SDL_Renderer *renderer) {
     game_state->player.player_data.has_password = false;
 }
 
+void game_state_restart(game_state_t *game_state, SDL_Renderer *renderer) {
+    for (int k = 0; k < game_state->maps; k++) {
+        free(game_state->map[k].hitbox);
+        SDL_DestroyTexture(game_state->map[k].wall_sprite);
+        SDL_DestroyTexture(game_state->map[k].floor_sprite);
+        SDL_DestroyTexture(game_state->map[k].doorw_sprite);
+        SDL_DestroyTexture(game_state->map[k].doorh_sprite);
+        SDL_DestroyTexture(game_state->map[k].lockw_sprite);
+        SDL_DestroyTexture(game_state->map[k].lockh_sprite);
+        SDL_DestroyTexture(game_state->map[k].password_sprite);
+        SDL_DestroyTexture(game_state->map[k].laser_source_sprite);
+        for (int q = 0; q < game_state->map[k].enemies_count; q++) {
+            if (game_state->map[k].enemies[q].enemy_data.path) {
+                free(game_state->map[k].enemies[q].enemy_data.path);
+            }
+            if (game_state->map[k].enemies[q].image) {
+                SDL_DestroyTexture(game_state->map[k].enemies[q].image);
+            }
+            if (game_state->map[k].enemies[q].image2) {
+                SDL_DestroyTexture(game_state->map[k].enemies[q].image2);
+            }
+        }
+    }
+    free(game_state->map);
+    if (game_state->player.image) SDL_DestroyTexture(game_state->player.image);
+    if (game_state->player.image2) SDL_DestroyTexture(game_state->player.image2);
+    game_state_initialize(game_state, renderer);
+}
+
 v2 entity_tile_pos(entity_t entity) {
     int x, y;
 
@@ -226,6 +259,15 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
         case PLAYING:
             {
                 // finale
+                if (!game_state->finale &&
+                        game_state->current_map_id == 2 &&
+                        player->pos.x >= 11 * TILE_SIZE &&
+                        player->pos.y >= 37 * TILE_SIZE &&
+                        player->pos.x <= 13 * TILE_SIZE &&
+                        player->pos.y <= 39 * TILE_SIZE) {
+                    game_state->finale = true;
+                    game_state->finale_timer = 5;
+                }
                 if (game_state->finale_timer >= 0) game_state->finale_timer -= dt;
 
                 // movement
@@ -379,19 +421,118 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                             case PASSWORD:
                                 SDL_RenderCopy(renderer, m.password_sprite, 0, &rect);
                                 break;
-                            case LOCK:
-                                if ( m.tile[j][i-1] == WALL ) {
-                                    SDL_RenderCopy(renderer, m.lockh_sprite, 0, &rect);
-                                } else {
-                                    SDL_RenderCopy(renderer, m.lockw_sprite, 0, &rect); 
-                                }
-                                break;
                             case LASER_SOURCE:
                                 laser_source_pos = V2(i, j);
                                 has_laser_source = true;
                                 break;
+                            case LOCK:
+                                break;
                             default:
                                 assert(false);
+                                break;
+                        }
+                    }
+                }
+                for (int j = 0; j < m.h; j++) {
+                    for (int i = 0; i < m.w; i++) {
+                        SDL_Rect rect;
+                        rect.x = TILE_SIZE * i;
+                        rect.y = TILE_SIZE * j;
+                        rect.w = TILE_SIZE;
+                        rect.h = TILE_SIZE;
+                        switch(m.tile[j][i]) {
+                            case LOCK:
+                                {
+                                    if ( m.tile[j-1][i] == WALL || m.tile[j+1][i]) {
+                                        SDL_RenderCopy(renderer, m.lockh_sprite, 0, &rect);
+
+                                        if (!game_state->finale ||
+                                                (game_state->finale_timer >= 4.5 &&
+                                                 game_state->finale_timer <= 4.7) ||
+                                                (game_state->finale_timer >= 4.1 &&
+                                                 game_state->finale_timer <= 4.3) ||
+                                                (game_state->finale_timer >= 3.7 &&
+                                                 game_state->finale_timer <= 3.9) ||
+                                                (game_state->finale_timer >= 3.3 &&
+                                                 game_state->finale_timer <= 3.5) ||
+                                                (game_state->finale_timer >= 2.9 &&
+                                                 game_state->finale_timer <= 3.1))
+                                        {
+                                            v2 v;
+                                            // TODO: maybe optimize this
+                                            v2 t;
+
+                                            if (m.tile[j-1][i] == EMPTY) {
+                                                v = V2(0, -1);
+                                                v2 pos = V2(rect.x + TILE_SIZE/2, rect.y - 1);
+                                                collides_with_walls(pos, pos + v*800, m, &t);
+                                                thickLineRGBA(renderer, pos.x, pos.y, t.x, t.y, 4, 255, 0, 120, 255);
+
+                                                // NOTE: quick shitty implementation, should actually be in game_state_update
+                                                if (seg_intersects_circle(game_state->player.pos, game_state->player.hitbox_r, pos, t)) {
+                                                    game_state_restart(game_state, renderer);
+                                                }
+                                            }
+
+                                            if (m.tile[j+1][i] == EMPTY) {
+                                                v = V2(0, 1);
+                                                v2 pos = V2(rect.x + TILE_SIZE/2, rect.y + TILE_SIZE + 1);
+                                                collides_with_walls(pos, pos + v*800, m, &t);
+                                                thickLineRGBA(renderer, pos.x, pos.y, t.x, t.y, 4, 255, 0, 120, 255);
+
+                                                // NOTE: quick shitty implementation, should actually be in game_state_update
+                                                if (seg_intersects_circle(game_state->player.pos, game_state->player.hitbox_r, pos, t)) {
+                                                    game_state_restart(game_state, renderer);
+                                                }
+                                            }
+                                        }
+                                    } else {
+                                        SDL_RenderCopy(renderer, m.lockw_sprite, 0, &rect); 
+
+                                        if (!game_state->finale ||
+                                                (game_state->finale_timer >= 4.5 &&
+                                                 game_state->finale_timer <= 4.7) ||
+                                                (game_state->finale_timer >= 4.1 &&
+                                                 game_state->finale_timer <= 4.3) ||
+                                                (game_state->finale_timer >= 3.7 &&
+                                                 game_state->finale_timer <= 3.9) ||
+                                                (game_state->finale_timer >= 3.3 &&
+                                                 game_state->finale_timer <= 3.5) ||
+                                                (game_state->finale_timer >= 2.9 &&
+                                                 game_state->finale_timer <= 3.1))
+                                        {
+                                            v2 v;
+                                            // TODO: maybe optimize this
+                                            v2 t;
+
+                                            if (m.tile[j][i+1] == EMPTY) {
+                                                v = V2(1, 0);
+                                                v2 pos = V2(rect.x + TILE_SIZE + 1, rect.y + TILE_SIZE/2);
+                                                collides_with_walls(pos, pos + v*800, m, &t);
+                                                thickLineRGBA(renderer, pos.x, pos.y, t.x, t.y, 4, 255, 0, 120, 255);
+
+                                                // NOTE: quick shitty implementation, should actually be in game_state_update
+                                                if (seg_intersects_circle(game_state->player.pos, game_state->player.hitbox_r, pos, t)) {
+                                                    game_state_restart(game_state, renderer);
+                                                }
+                                            }
+
+                                            if (m.tile[j][i-1] == EMPTY) {
+                                                v = V2(-1, 0);
+                                                v2 pos = V2(rect.x - 1, rect.y + TILE_SIZE/2);
+                                                collides_with_walls(pos, pos + v*800, m, &t);
+                                                thickLineRGBA(renderer, pos.x, pos.y, t.x, t.y, 4, 255, 0, 120, 255);
+
+                                                // NOTE: quick shitty implementation, should actually be in game_state_update
+                                                if (seg_intersects_circle(game_state->player.pos, game_state->player.hitbox_r, pos, t)) {
+                                                    game_state_restart(game_state, renderer);
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                break;
+                            default:
                                 break;
                         }
                     }
@@ -446,32 +587,7 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                                     game_state->player.hitbox_r,
                                     e[i].pos,
                                     t)) {
-                            for (int k = 0; k < game_state->maps; k++) {
-                                free(game_state->map[k].hitbox);
-                                SDL_DestroyTexture(game_state->map[k].wall_sprite);
-                                SDL_DestroyTexture(game_state->map[k].floor_sprite);
-                                SDL_DestroyTexture(game_state->map[k].doorw_sprite);
-                                SDL_DestroyTexture(game_state->map[k].doorh_sprite);
-                                SDL_DestroyTexture(game_state->map[k].lockw_sprite);
-                                SDL_DestroyTexture(game_state->map[k].lockh_sprite);
-                                SDL_DestroyTexture(game_state->map[k].password_sprite);
-                                SDL_DestroyTexture(game_state->map[k].laser_source_sprite);
-                                for (int q = 0; q < game_state->map[k].enemies_count; q++) {
-                                    if (game_state->map[k].enemies[q].enemy_data.path) {
-                                        free(game_state->map[k].enemies[q].enemy_data.path);
-                                    }
-                                    if (game_state->map[k].enemies[q].image) {
-                                        SDL_DestroyTexture(game_state->map[k].enemies[q].image);
-                                    }
-                                    if (game_state->map[k].enemies[q].image2) {
-                                        SDL_DestroyTexture(game_state->map[k].enemies[q].image2);
-                                    }
-                                }
-                            }
-                            free(game_state->map);
-                            if (game_state->player.image) SDL_DestroyTexture(game_state->player.image);
-                            if (game_state->player.image2) SDL_DestroyTexture(game_state->player.image2);
-                            game_state_initialize(game_state, renderer);
+                            game_state_restart(game_state, renderer);
                         }
 
                         //SDL_RenderDrawLine(renderer, e[i].pos.x, e[i].pos.y, t.x, t.y);

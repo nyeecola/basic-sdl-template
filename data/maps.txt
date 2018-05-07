@@ -1,20 +1,20 @@
-2
+3
 
 40 30 2
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 O     c   b                            O
 OO   OOOOOOOOOOOOO  OOOOOOOOOOOOOOOOOOOO
-O     d          O           L     r   O
+O     d          O                 r   O
 O    a           O   P r           OO  O
 OOOOOOOOOOOOOO  OOO  OOOOOOOO  OOOOO   O
 O  d            dO    b a         r    O
 O            P   O                 b   O
 OOOOOOOOOO  OOOOOO   OOOOOOOOO  OOOOOOOO
-O     c        O     O     L       e   O
+O     c        O     O             e   O
 Ob O  OOOOOOOO O     O e             c O
 O  O           O     O          e      O
 OOOO  f    L   OO   OOO  OOOOOOOOOOOOOOO
-O                 L                    O
+O                                      O
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOO     OOOOO
 O   z f                         z      O
 O                  z                   O
@@ -35,7 +35,7 @@ OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 39 25 38 25  1  1
 
 
-40 30 2
+40 30 3
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 O                                      O
 O                                      O
@@ -61,10 +61,45 @@ O                 O                    O
 O                 O                    O
 O                 O                    O
 O                 O                    O
-O                 O              S     O
+O                 O                    O
 O                 O                    O
 O                 O                    O
 O                 O                    O
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 30 29 30 28 0 0
 15 29 15 28 0 1
+39 10 38  9 2 0
+
+
+40 30 1
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+O                                      O
+O                                  OL  O
+O                                  O  LO
+O                                  OL  O
+O                                 gO  LO
+O                                  OL  O
+O                                  O  LO
+O                               OOOOL  O
+O                               O  L   O
+O             OOOOOOOOOO        O      O
+O            OO        OOOOOOOOOO    OOO
+O            O            P         S OO
+O            O                        OO
+O            OO        OOOOOOOOOO    OOO
+O             O       LO        O      O
+O                         P     O  L   O
+O                               OOOOL  O
+O                 O               gO  LO
+O                 O                OL  O
+O                 O                O  LO
+O                 O                OL  O
+O                 O                O  LO
+O                 O                OL  O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+O                 O                    O
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+5  0  5  1 1 2
