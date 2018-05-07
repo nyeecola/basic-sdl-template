@@ -66,8 +66,8 @@ void enemy_set_destination(map_t map, entity_t *enemy, v2 dest) {
     enemy->enemy_data.path[0] = V2(((int) enemy_pos.x)/TILE_SIZE, ((int) enemy_pos.y)/TILE_SIZE);
 
     int i = 0;
-    int k = 0;
     while (true) {
+        assert(i < end);
         v2 currentPoint = enemy->enemy_data.path[i];
         if (tiles[(int)currentPoint.y][(int) currentPoint.x] == 0) break;
         v2 min = currentPoint;
@@ -121,6 +121,8 @@ void enemy_set_destination(map_t map, entity_t *enemy, v2 dest) {
 }
 
 void enemy_move(map_t map, entity_t *enemy, double dt) {
+    assert(enemy);
+
     enemy->previous_pos = enemy->pos;
 
     v2 dir = (enemy->enemy_data.path[enemy->enemy_data.path_cur]*TILE_SIZE) + V2(TILE_SIZE/2, TILE_SIZE/2) - enemy->pos;
@@ -136,6 +138,7 @@ void enemy_move(map_t map, entity_t *enemy, double dt) {
         }
         return;
     }
+
 
     v2 normalized_dir = math_normalize(dir);
     dir = normalized_dir * (enemy->speed*dt);
@@ -191,5 +194,6 @@ void enemy_move(map_t map, entity_t *enemy, double dt) {
             if (enemy->angle < 0) enemy->angle += 360;
         }
     }
+
 #endif
 }

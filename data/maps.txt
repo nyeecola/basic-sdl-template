@@ -47,13 +47,13 @@ O                                      O
 O                                      O
 O                                      O
 O                                      O
-O                                      O
-O                                      O
-O                 OOOOOOOOOOOOOOOOOOOOOO
+O              OOOOOOOOO               O
+O              O                       O
+O           OOOOOOOOOOOOOOOOOOOOOOOOOOOO
+O           O     O                    O
+O           O     O                    O
 O                 O                    O
-O                 O                    O
-O                 O                    O
-O                 O                    O
+O           O     O                    O
 O                 O                    O
 O                 O                    O
 O                 O                    O

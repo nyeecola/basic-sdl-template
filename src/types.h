@@ -125,6 +125,9 @@ struct map_t {
     seg_t *hitbox; // all static line segments used for collision
     int hitbox_size;
 
+    entity_t enemies[30];
+    int enemies_count;
+
     SDL_Texture *wall_sprite;
     SDL_Texture *floor_sprite;
     SDL_Texture *doorw_sprite;
@@ -142,10 +145,6 @@ struct game_state_t {
     // map
     int current_map_id;
     map_t *map;
-
-    //npcs
-    entity_t enemies[128];
-    int enemies_count;
 
     // player
     entity_t player;

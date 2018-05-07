@@ -9,6 +9,7 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
     assert(maps <= MAX_MAPS_PER_RUN);
 
     for(int m=0 ; m < maps ; m++) {
+        map[m].enemies_count = 0;
         trash = fscanf(arq, "%d %d %d", &map[m].w, &map[m].h, &map[m].doors);
         do {
             trash = fscanf(arq, "%c", &current);
@@ -77,6 +78,24 @@ void load_maps(map_t *map, SDL_Renderer *renderer) {
     }
 }
 
+void add_enemy_to_map(map_t *map, SDL_Renderer *renderer, v2 pos, v2 loc1, v2 loc2, v2 loc3) {
+    int index = map->enemies_count;
+    map->enemies[index].pos = pos * TILE_SIZE;
+    map->enemies[index].speed = 100;
+    map->enemies[index].image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
+    map->enemies[index].image_w = 18;
+    map->enemies[index].image_h = 18;
+    map->enemies[index].type = ENEMY;
+    map->enemies[index].enemy_data.possibleDestinations[0] = loc1 * TILE_SIZE;
+    map->enemies[index].enemy_data.possibleDestinations[1] = loc2 * TILE_SIZE;
+    map->enemies[index].enemy_data.possibleDestinations[2] = loc3 * TILE_SIZE;
+    map->enemies[index].enemy_data.possibleDestinations_len = 3;
+    map->enemies[index].enemy_data.path = NULL;
+    map->enemies[index].enemy_data.rotation_speed = 50;
+    enemy_set_destination(*map, &map->enemies[index], loc1 * TILE_SIZE);
+    map->enemies_count++;
+}
+
 game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     assert(renderer);
 
@@ -99,20 +118,11 @@ game_state_t *game_state_initialize(SDL_Renderer *renderer) {
     create_wall_lines(&game_state->map[0]); // map static hitbox
 
     // initialize enemy
-    game_state->enemies_count = 1;
-    game_state->enemies[0].pos = V2(400,400);
-    game_state->enemies[0].speed = 100;
-    game_state->enemies[0].image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
-    game_state->enemies[0].image_w = 18;
-    game_state->enemies[0].image_h = 18;
-    game_state->enemies[0].type = ENEMY;
-    game_state->enemies[0].enemy_data.possibleDestinations[0] = V2(5 * TILE_SIZE,5 * TILE_SIZE);
-    game_state->enemies[0].enemy_data.possibleDestinations[1] = V2(25 * TILE_SIZE,5 * TILE_SIZE);
-    game_state->enemies[0].enemy_data.possibleDestinations[2] = V2(10 * TILE_SIZE,25 * TILE_SIZE);
-    game_state->enemies[0].enemy_data.possibleDestinations_len = 3;
-    game_state->enemies[0].enemy_data.path = NULL;
-    game_state->enemies[0].enemy_data.rotation_speed = 50;
-    enemy_set_destination(game_state->map[game_state->current_map_id], &game_state->enemies[0], V2(210,210));
+    add_enemy_to_map(&game_state->map[0], renderer, V2(20, 20), V2(5, 5), V2(25, 5), V2(10, 25));
+    add_enemy_to_map(&game_state->map[0], renderer, V2(10, 14), V2(25, 5), V2(10, 10), V2(4, 16));
+    add_enemy_to_map(&game_state->map[0], renderer, V2(20, 2), V2(10, 25), V2(2, 28), V2(34, 19));
+    add_enemy_to_map(&game_state->map[0], renderer, V2(9, 3), V2(11, 16), V2(22, 8), V2(31, 17));
+    add_enemy_to_map(&game_state->map[1], renderer, V2(9, 3), V2(11, 16), V2(22, 8), V2(31, 17));
 
     // initialize player data
     game_state->player.pos = V2(50, 50);
@@ -253,10 +263,11 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                 }
 
                 // update enemies
+#if 0
                 int e_c = game_state->enemies_count;
                 for (int i = 0; i < e_c; i++) {
-                    v2 v = game_state->enemies[i].pos - game_state->enemies[i].previous_pos;
 #if 0
+                    v2 v = game_state->enemies[i].pos - game_state->enemies[i].previous_pos;
                     if (math_magnitude(v)) {
                         game_state->enemies[i].angle = atan2(v.y, v.x);
                         game_state->enemies[i].angle *= 180/M_PI;
@@ -265,8 +276,13 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
 
                     enemy_move(game_state->map[game_state->current_map_id], &game_state->enemies[i], dt);
                 }
-
+#endif
                 map_t *map = &(game_state->map[game_state->current_map_id]);
+                int e_c = map->enemies_count;
+                for (int i = 0; i < e_c; i++) {
+                    enemy_move(*map, &map->enemies[i], dt);
+                }
+
                 v2 tile_pos = entity_tile_pos(game_state->player);
                 if ( map->tile[(int)tile_pos.y][(int)tile_pos.x] == PASSWORD && !game_state->player.player_data.has_password ) {
                     map->tile[(int)tile_pos.y][(int)tile_pos.x] = EMPTY;
@@ -336,9 +352,10 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
 
             // draw enemies
             {
-                int e_c = game_state->enemies_count;
+                map_t map = game_state->map[game_state->current_map_id];
+                int e_c = map.enemies_count;
                 entity_t e[128];
-                memcpy(&e, &game_state->enemies, sizeof(e));
+                memcpy(&e, map.enemies, sizeof(e));
                 for (int i = 0; i < e_c; i++) {
                     // draw laser
                     {
@@ -357,7 +374,7 @@ void game_state_render(game_state_t *game_state, SDL_Renderer *renderer, double 
                         v.x = cos(e[i].angle/(180.0f/M_PI));
                         v.y = sin(e[i].angle/(180.0f/M_PI));
                         v2 t;
-                        collides_with_walls(e[i].pos, e[i].pos + v*800, game_state->map[game_state->current_map_id], &t);
+                        collides_with_walls(e[i].pos, e[i].pos + v*800, map, &t);
                         //SDL_RenderDrawLine(renderer, e[i].pos.x, e[i].pos.y, t.x, t.y);
                         thickLineRGBA(renderer, e[i].pos.x, e[i].pos.y, t.x, t.y, 4, 255, 0, 0, 255);
                     }
