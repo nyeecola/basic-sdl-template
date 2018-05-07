@@ -261,10 +261,10 @@ void game_state_update(game_state_t *game_state, input_t *input, double dt) {
                 // finale
                 if (!game_state->finale &&
                         game_state->current_map_id == 2 &&
-                        player->pos.x >= 11 * TILE_SIZE &&
-                        player->pos.y >= 37 * TILE_SIZE &&
-                        player->pos.x <= 13 * TILE_SIZE &&
-                        player->pos.y <= 39 * TILE_SIZE) {
+                        player->pos.y >= 11 * TILE_SIZE &&
+                        player->pos.x >= 37 * TILE_SIZE &&
+                        player->pos.y <= 13 * TILE_SIZE &&
+                        player->pos.x <= 39 * TILE_SIZE) {
                     game_state->finale = true;
                     game_state->finale_timer = 5;
                 }
