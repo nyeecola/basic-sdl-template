@@ -160,4 +160,7 @@ struct game_state_t {
     // finale
     bool finale;
     double finale_timer;
+
+    // music
+    Mix_Music *music;
 };

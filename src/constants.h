@@ -14,6 +14,8 @@ const int FONT_SIZE = 20;
 const char * const CAT_IMG_PATH = "assets/cat.png";
 const char * const ENEMY_IMG_PATH = "assets/bad-cat.png";
 const char * const CAT_PASSWORD_IMG_PATH = "assets/cat_password.png";
+//const char * const SOUNDTRACK_PATH = "assets/gato.mp3";
+const char * const SOUNDTRACK_PATH = "assets/gato.wav";
 
 // map
 const char * const MAPS_SOURCE_PATH = "data/maps.txt";

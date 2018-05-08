@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL2_gfxPrimitives.h>
 
 #include <cstdio>
@@ -76,6 +77,18 @@ int main(int, char *[]) {
         force_quit("Failed to create renderer.\n");
     }
 
+    // create decoder and mixer
+#if 0
+    if (MIX_INIT_MP3 != Mix_Init(MIX_INIT_MP3)) {
+        SDL_DestroyWindow(window);
+        force_quit("Failed to initialize mp3 decoder.\n");
+    }
+#endif
+    if (Mix_OpenAudio( 22050, MIX_DEFAULT_FORMAT, 2, 4096 ) == -1) {
+        SDL_DestroyWindow(window);
+        force_quit("Failed to create mixer.\n");
+    }
+
     // enables vsync
     SDL_GL_SetSwapInterval(1); // TODO: find out why game runs so different with vsync off
 
@@ -87,6 +100,9 @@ int main(int, char *[]) {
     game_state->spawn_map_id = 0;
     game_state_initialize(game_state, renderer);
     debug_initialize_text(renderer);
+
+    game_state->music = Mix_LoadMUS(SOUNDTRACK_PATH);
+    Mix_PlayMusic(game_state->music, -1);
 
     // main loop
     bool running = true;
