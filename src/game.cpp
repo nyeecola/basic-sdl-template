@@ -2,9 +2,9 @@ void add_enemy_to_map(map_t *map, SDL_Renderer *renderer, v2 *vecs, int n) {
     assert(n >= 2);
 
     int index = map->enemies_count;
-    map->enemies[index].pos = vecs[0] * TILE_SIZE;
+    map->enemies[index].pos = vecs[rand()%n] * TILE_SIZE;
     map->enemies[index].speed = 100;
-    map->enemies[index].image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
+    map->enemies[index].image = IMG_LoadTexture(renderer, ENEMY_IMG_PATH);
     map->enemies[index].image_w = 18;
     map->enemies[index].image_h = 18;
     map->enemies[index].type = ENEMY;
@@ -13,8 +13,8 @@ void add_enemy_to_map(map_t *map, SDL_Renderer *renderer, v2 *vecs, int n) {
     }
     map->enemies[index].enemy_data.possibleDestinations_len = n;
     map->enemies[index].enemy_data.path = NULL;
-    map->enemies[index].enemy_data.rotation_speed = 50;
-    enemy_set_destination(*map, &map->enemies[index], vecs[1] * TILE_SIZE);
+    map->enemies[index].enemy_data.rotation_speed = 120;
+    enemy_set_destination(*map, &map->enemies[index], vecs[rand()%n] * TILE_SIZE);
     map->enemies_count++;
 }
 
@@ -127,6 +127,9 @@ void load_maps(game_state_t *game_state, map_t *map, SDL_Renderer *renderer) {
 void game_state_initialize(game_state_t *game_state, SDL_Renderer *renderer) {
     assert(renderer);
 
+    // seed
+    srand(123);
+
     // game mode
     game_state->game_mode = PLAYING;
 
@@ -141,10 +144,11 @@ void game_state_initialize(game_state_t *game_state, SDL_Renderer *renderer) {
 
     // initialize maps
     game_state->map = (map_t*) malloc(sizeof(*(game_state->map)) * MAX_DOOR_PER_ROOM);
-    game_state->current_map_id = 0;
+    game_state->current_map_id = 2;
     load_maps(game_state, game_state->map, renderer);
 
     // initialize player data
+    //game_state->player.pos = V2(750, 550);
     game_state->player.pos = V2(50, 50);
     game_state->player.speed = 150;
     game_state->player.image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
@@ -222,6 +226,7 @@ void handle_doors(game_state_t *game_state) {
 
                 game_state->player.pos.x = door.exit_x * TILE_SIZE + TILE_SIZE/2;
                 game_state->player.pos.y = door.exit_y * TILE_SIZE + TILE_SIZE/2;
+                break;
             }
         }
     }

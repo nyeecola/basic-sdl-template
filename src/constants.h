@@ -10,12 +10,10 @@ const int DEFAULT_SCREEN_HEIGHT = 600;
 const char * const FONT_PATH = "assets/Inconsolata-Bold.ttf";
 const int FONT_SIZE = 20;
 
-// test assets (ball)
-const char * const BALL_IMG_PATH = "assets/ball.png";
+// assets
 const char * const CAT_IMG_PATH = "assets/cat.png";
+const char * const ENEMY_IMG_PATH = "assets/bad-cat.png";
 const char * const CAT_PASSWORD_IMG_PATH = "assets/cat_password.png";
-const float BALL_SPEED = 0.8;
-const float BALL_SCALE = 0.1;
 
 // map
 const char * const MAPS_SOURCE_PATH = "data/maps.txt";

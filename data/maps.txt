@@ -1,105 +1,103 @@
 3
 
+40 30 1
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+O           OO      a  OOO           P O
+O     O O        O                     O
+OO   OOOOOOOOOOOOO  OOOOOOOOOOOO   OOOOO
+O      Ob        O                 a   O
+O          O     O    l  a       O     O
+OOOOOOOOOOOOOO  OOO  OOOOOOOO  OOOOO  eO
+O      O         O    e   O        O   O
+O  bO       O    O     O            l  O
+OOOOOOOOOO  OOOOOO   OOOOOOOOO  OOOOOOOO
+O   c          O     O d     O   Od    O
+O  O        c  O  e  O     d        Od O
+OOOO           OO   OOO  OOOOOOOOOOOOOOO
+O    e                                 O
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOL    OOOOO
+OOOOOOOOO  f          O f           f  O
+OOOOOOOOO     O   fO          O f      O
+OOOOOOOOO  OOOOOOOOOOOOOOO  OOOOOOOOOOOO
+O       O  O O  g   O        g         O
+O g O      O    OO  OOO  OOOOOO  OOO   O
+O   OO  g     OOO     g       O  OOOO  O
+OO   OOOOOOOOOOOOOOOOOOOOOO   O  OOO g O
+O  j        O   O       jO   gO   O    O
+O OO   OO                O           O O
+OOOOOOOOOOOOOOOOOOOOO   iOOOOOOOOOOOOOOO
+O           O  O         OOO       n   O
+O iOOOOOOO        OOOOOOOOOO  OOOO     O
+O        OOOOOOOOOOn     O      OO     O
+O n  O               O     n  O  On    O
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+39 28 38 28 1 0
+
+
 40 30 2
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-O     c   b                            O
-OO   OOOOOOOOOOOOO  OOOOOOOOOOOOOOOOOOOO
-O     d          O                 r   O
-O    a           O   P r           OO  O
-OOOOOOOOOOOOOO  OOO  OOOOOOOO  OOOOO   O
-O  d            dO    b a         r    O
-O            P   O                 b   O
-OOOOOOOOOO  OOOOOO   OOOOOOOOO  OOOOOOOO
-O     c        O     O             e   O
-Ob O  OOOOOOOO O     O e             c O
-O  O           O     O          e      O
-OOOO  f    L   OO   OOO  OOOOOOOOOOOOOOO
-O                                      O
-OOOOOOOOOOOOOOOOOOOOOOOOOOOOOO     OOOOO
-O   z f                         z      O
-O                  z                   O
-OOOOOOOOOOOOOOOOOOOOOOOOOO  OOOOOOOOOOOO
-O                                      O
-O     f                           g    O
-O                                      O
-OOO  OOOOOOOOOOOOOOOOOOOOO  OOOOOOOOOOOO
-O                                      O
-O     g           a                    O
-OOOOOOOOOOO  OOOOOOOOOOOOOOOOOOO   OO  O
-O                                 g    O
-O                                      O
-O  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-O                  b                   O
+O              O      a O bO     O    PO
+O      OOO     O    O   O     O    b   O
+O      OOOO    O    O   O     O        O
+O      OOOOOa     OOO       OOOOOOOO  OO
+O      OOOOO    OOO              O     O
+O                   aO  O   OOb   b   OO
+O     LOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+OOO    O        OOP      O       c OOO O
+OOOO       O     OOOOO       OOOO      O
+OOOOO     OOO d      OOO c  OOOOOOO    O
+OOOOO       O  OOO  OOOO          O  c O
+OOOOO  O  d         d     O    Oc      O
+OOOO   OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+OO     O  OOe         O e    O f      OO
+O      L       OOOO   O          O     O
+O  OO        OOO      OO   OOOOOOOO  f O
+O  OO    e  OO    OO   O  OO f O     OOO
+O      O    O   e O       O    O    OOOO
+OL    OOOOOOOOOO     OOOOOOOO     OOOOOO
+O      OOOOOOOOOO   OOOOOOO         OOOO
+OO    OOOOOOOOOOOOOOOOOOOOO   OO     OOO
+O    OOOOO OOOOOOOOOOOOOOO    OOOOO   OO
+O  OOOOg      gOOOOOOOOO   f OOOO     OO
+O  g O  OOO OO  OOOOOOOOOOOOOOOOOOO   OO
+O       OOOOOO           OOOO          O
+OOO         O    gO O  OOOOO      OOO  O
+OOOO  g  O     O              OO  h O  O
+OOOO    OO   gOO  hOO    hOOO          O
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-39 7  38  7  1  0
-39 25 38 25  1  1
-
-
-40 30 3
-OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-O                                      O
-O                                      O
-O                                      O
-O                                 g    O
-O                                      O
-O                                      O
-O                                      O
-O                                      O
-O                                      O
-O                                      O
-O              OOOOOOOOO               O
-O             aO a                     O
-O           OOOOOOOOO OOOOOOOOOOOOOOO OO
-O           O     O                    O
-O           O    aO                    O
-O                 Oa              g    O
-O           O     O                    O
-O                 O                    O
-O                 O                    O
-O                 O                    O
-O                 O                    O
-O                 O                    O
-O                 O                    O
-O                 O                    O
-O                 O                    O
-O                 O                    O
-O                 O                    O
-O                 O                    O
-OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-30 29 30 28 0 0
-15 29 15 28 0 1
-39 10 38  9 2 0
+0 4 1 4 0 0
+37 29 37 28 2 0
 
 
 40 30 1
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-O                                      O
-O                                  OL  O
-O                                  O  LO
-O                                  OL  O
-O                                 gO  LO
-O                                  OL  O
-O                                  O  LO
-O                               OOOOL  O
-O                               O  L   O
-O             OOOOOOOOOO        O      O
-O            OO        OOOOOOOOOO    OOO
-O            O            P         S OO
-O            O                        OO
-O            OO        OOOOOOOOOO    OOO
-O             O       LO        O      O
-O                         P     O  L   O
-O                               OOOOL  O
-O                 O               gO  LO
-O                 O                OL  O
-O                 O                O  LO
-O                 O                OL  O
-O                 O                O  LO
-O                 O                OL  O
-O                 O                    O
-O                 O                    O
-O                 O                    O
-O                 O                    O
-O                 O                    O
+OOO              OOOOOOOOOOOOOOOOOOO   O
+OO      OOO      OOOOOOOOOOOOOOOOOOOL  O
+OOOOOOOOOOOOOO  OOOOOOOOOOOOOOOOOOOO  LO
+O  OOOO          OOOOOOOOOOOOOOOOOOOL  O
+O         OO     OOOOOOOOOOOOOOOOOOO  LO
+OO  OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOL  O
+O  a OO        a OOOOOOOOOOOOOOOOOOO  LO
+OO    b  O  OO   OOOOOOOOOOOOOOOOOOOL  O
+O  OO    O     b OOOOOOOOOOOOOOOO      O
+O   OO  OO    OOOOOOOOOOOOOOOOOOO      O
+O   bOOOO a  OO        OOOOOOOOOO    OOO
+O a          O                      S OO
+OO     O  b OO                        OO
+OOOOO  O  OOOOOL       OOOOOOOOOO    OOO
+OO c   O    OOO       LOOOOOOOOOO      O
+O     OO                OOOOOPOOO      O
+O  OO OO OOc           OOOOOO   OOOOL  O
+O   OOOOOO         OOOOOOO       d O  LO
+O     OPOOO       OO      d  O O   OL  O
+OO c    OOOO  O  OO   OO   OOOOOO  O  LO
+OOO           O  O  dOO   OOO O    OL  O
+OOOOOO     c OO               O   OO  LO
+OOOOOOO              OO OOO d      OL  O
+OOOOOOOOOOOOOOOOOOOOOOO  OOO    OOOO   O
 OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
-5  0  5  1 1 2
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
+6 0 6 1 1 1
