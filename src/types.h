@@ -151,6 +151,8 @@ struct game_state_t {
 
     // player
     entity_t player;
+    v2 spawn_loc;
+    int spawn_map_id;
 
     // scene data
     color_t background_color;

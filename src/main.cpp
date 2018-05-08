@@ -83,6 +83,8 @@ int main(int, char *[]) {
     // TODO: set seed for RNG
     input_t *input = initialize_input();
     game_state_t *game_state = (game_state_t *) malloc(sizeof(*game_state));
+    game_state->spawn_loc = V2(50, 50);
+    game_state->spawn_map_id = 0;
     game_state_initialize(game_state, renderer);
     debug_initialize_text(renderer);
 

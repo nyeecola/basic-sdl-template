@@ -144,12 +144,14 @@ void game_state_initialize(game_state_t *game_state, SDL_Renderer *renderer) {
 
     // initialize maps
     game_state->map = (map_t*) malloc(sizeof(*(game_state->map)) * MAX_DOOR_PER_ROOM);
-    game_state->current_map_id = 2;
+    //game_state->current_map_id = 2;
+    game_state->current_map_id = game_state->spawn_map_id;
     load_maps(game_state, game_state->map, renderer);
 
     // initialize player data
     //game_state->player.pos = V2(750, 550);
-    game_state->player.pos = V2(50, 50);
+    //game_state->player.pos = V2(50, 50);
+    game_state->player.pos = game_state->spawn_loc;
     game_state->player.speed = 150;
     game_state->player.image = IMG_LoadTexture(renderer, CAT_IMG_PATH);
     game_state->player.image2 = IMG_LoadTexture(renderer, CAT_PASSWORD_IMG_PATH);
@@ -226,6 +228,10 @@ void handle_doors(game_state_t *game_state) {
 
                 game_state->player.pos.x = door.exit_x * TILE_SIZE + TILE_SIZE/2;
                 game_state->player.pos.y = door.exit_y * TILE_SIZE + TILE_SIZE/2;
+
+                if (game_state->current_map_id > game_state->spawn_map_id) {
+                    game_state->spawn_map_id = game_state->current_map_id;
+                }
                 break;
             }
         }
